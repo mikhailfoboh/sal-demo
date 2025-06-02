@@ -7,7 +7,8 @@ import { useTheme } from '@/hooks/useTheme';
 interface Note {
   id: string;
   content: string;
-  createdAt: string;
+  date: string;
+  type: string;
 }
 
 interface CustomerNotesProps {
