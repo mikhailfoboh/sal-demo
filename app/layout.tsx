@@ -14,8 +14,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <div id="__next" style={{ height: '100vh' }}>
-          {children}
+        <div id="__next" style={{ height: '100vh', display: 'flex', flexDirection: 'column' }}>
+          <div style={{ flex: 1, overflow: 'auto' }}>
+            {children}
+          </div>
         </div>
       </body>
     </html>
