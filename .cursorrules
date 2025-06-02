@@ -1,0 +1,35 @@
+# Cursor Rules for Precise Code Changes
+
+## Core Principle: Minimal, Targeted Changes Only
+- ONLY modify the exact code elements that the user explicitly mentions
+- NEVER make additional "improvements" or changes unless specifically requested
+- If moving code, preserve ALL existing styling, props, and formatting exactly as-is
+- When restructuring components, maintain the exact same attributes and styling
+
+## Change Guidelines
+1. **Scope Limitation**: If user asks to move component A to location B, ONLY move component A. Don't modify any other components, styles, or properties.
+
+2. **Preserve Existing State**: When moving or reorganizing code:
+   - Keep all existing className/style attributes identical
+   - Maintain all existing props and their values
+   - Preserve existing text content, colors, and formatting
+   - Don't "fix" or "improve" anything not explicitly mentioned
+
+3. **Explicit vs Implicit Changes**:
+   - ✅ User says "change background to red" → change only the background
+   - ✅ User says "move component X inside component Y" → move only component X
+   - ❌ Don't auto-fix indentation, spacing, or styling unless asked
+   - ❌ Don't update related components or "make things consistent"
+
+4. **Confirmation for Ambiguity**: If a change might affect other elements, ask for clarification rather than making assumptions.
+
+## Examples of What NOT to Do
+- Don't change text colors when only asked to move components
+- Don't update styling when only asked to restructure HTML/JSX
+- Don't "normalize" or "clean up" code unless specifically requested
+- Don't make changes to sibling or parent components unless mentioned
+
+## When to Ask
+- If the requested change might have unintended side effects
+- If multiple approaches exist for implementing the request
+- If preserving exact current behavior requires clarification 
