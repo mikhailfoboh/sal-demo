@@ -1,16 +1,19 @@
-const { withExpo } = require('@expo/next-adapter');
-
-module.exports = withExpo({
-  projectRoot: __dirname,
-  experimental: {
-    forceSwcTransforms: true,
-  },
-  webpack5: true,
+/** @type {import('next').NextConfig} */
+const nextConfig = {
+  transpilePackages: [
+    'react-native',
+    'react-native-web',
+    'expo',
+    'expo-router',
+    'react-native-safe-area-context',
+    '@expo/vector-icons',
+    'lucide-react-native',
+  ],
   webpack: (config) => {
     config.resolve.alias = {
       ...(config.resolve.alias || {}),
       'react-native$': 'react-native-web',
-      'react-native-safe-area-context': 'react-native-safe-area-context/src/web',
+      'react-native-web$': 'react-native-web',
     };
     
     config.resolve.extensions = [
@@ -23,4 +26,6 @@ module.exports = withExpo({
 
     return config;
   },
-}); 
+};
+
+module.exports = nextConfig; 
