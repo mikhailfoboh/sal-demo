@@ -47,9 +47,16 @@ export default function VoiceNoteScreen() {
       setRecordingTime(0);
       setTranscribedText('');
 
-      if (Platform.OS === 'web') {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
         // Web Speech API implementation
         const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+          setError('Speech recognition not supported in this browser');
+          setIsRecording(false);
+          return;
+        }
+        
         const recognition = new SpeechRecognition();
         
         recognition.continuous = true;
@@ -92,7 +99,7 @@ export default function VoiceNoteScreen() {
   
   const handleStopRecording = async () => {
     try {
-      if (Platform.OS === 'web') {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
         // Stop Web Speech API recognition
         const recognition = (window as any).currentRecognition;
         if (recognition) {
@@ -139,7 +146,7 @@ export default function VoiceNoteScreen() {
   
   const handleCancel = async () => {
     if (isRecording) {
-      if (Platform.OS === 'web') {
+      if (Platform.OS === 'web' && typeof window !== 'undefined') {
         // Stop Web Speech API recognition
         const recognition = (window as any).currentRecognition;
         if (recognition) {
