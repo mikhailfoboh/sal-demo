@@ -6,7 +6,7 @@ import { useTheme } from '@/hooks/useTheme';
 
 interface Contact {
   name: string;
-  role: string;
+  title: string;
   phone: string;
   email: string;
 }
@@ -35,7 +35,7 @@ export function ContactInfo({ contact }: ContactInfoProps) {
 
       <View style={styles.contactDetails}>
         <Text style={styles.contactName}>{contact.name}</Text>
-        <Text style={styles.contactRole}>{contact.role}</Text>
+        <Text style={styles.contactRole}>{contact.title}</Text>
 
         <TouchableOpacity 
           style={styles.contactItem} 
