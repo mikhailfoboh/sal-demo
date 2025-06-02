@@ -47,7 +47,7 @@ export default function LeadDetailScreen() {
   };
 
   const handleViewAllNotes = () => {
-    router.push(`/notes?leadId=${id}`);
+    router.push(`/notes?leadId=${id}` as any);
   };
 
   const handleMoveStage = () => {
@@ -103,7 +103,7 @@ export default function LeadDetailScreen() {
           <ContactInfo
             contact={{
               name: lead.contact.name,
-              role: lead.contact.title,
+              title: lead.contact.title,
               phone: lead.contact.phone,
               email: lead.contact.email
             }}
