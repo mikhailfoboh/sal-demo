@@ -49,7 +49,7 @@ export default function CustomerDetailScreen() {
   };
 
   const handleViewAllNotes = () => {
-    router.push(`/notes?customerId=${id}`);
+    router.push(`/notes?customerId=${id}` as any);
   };
 
   return (

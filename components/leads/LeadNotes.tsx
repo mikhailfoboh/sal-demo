@@ -31,7 +31,7 @@ export function LeadNotes({ notes, onNotePress, onViewAll }: LeadNotesProps) {
       <NotesList
         notes={notes}
         onNotePress={onNotePress}
-        showLead={false}
+        showCustomer={false}
       />
     </Card>
   );
