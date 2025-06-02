@@ -5,7 +5,7 @@ import { Tag } from '@/components/ui/Tag';
 interface CustomerHeaderProps {
   name: string;
   segment: string;
-  healthStatus: 'healthy' | 'at-risk' | 'inactive';
+  healthStatus: 'healthy' | 'attention' | 'at-risk' | 'inactive';
   churnRisk?: string;
 }
 
@@ -15,6 +15,7 @@ export function CustomerHeader({ name, segment, healthStatus, churnRisk }: Custo
   const getHealthTag = () => {
     switch (healthStatus) {
       case 'healthy': return <Tag text="Healthy" type="success" />;
+      case 'attention': return <Tag text="Attention" type="warning" />;
       case 'at-risk': return <Tag text="At Risk" type="warning" />;
       case 'inactive': return <Tag text="Inactive" type="error" />;
       default: return null;
@@ -33,7 +34,7 @@ export function CustomerHeader({ name, segment, healthStatus, churnRisk }: Custo
         </View>
       </View>
       
-      {healthStatus === 'at-risk' && churnRisk && (
+      {(healthStatus === 'at-risk' || healthStatus === 'attention') && churnRisk && (
         <View style={[styles.riskAlert, { backgroundColor: colors.warningLight }]}>
           <Text style={[styles.riskText, { color: colors.warning }]}>
             {churnRisk}

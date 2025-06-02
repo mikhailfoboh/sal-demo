@@ -14,6 +14,7 @@ export function CustomerRow({ customer, onPress }: CustomerRowProps) {
   const getStatusColor = () => {
     switch (customer.healthStatus) {
       case 'healthy': return colors.success;
+      case 'attention': return colors.warning;
       case 'at-risk': return colors.warning;
       case 'inactive': return colors.error;
       default: return colors.textSecondary;
