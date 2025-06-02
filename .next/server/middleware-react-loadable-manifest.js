@@ -1,1 +1,1 @@
-self.__REACT_LOADABLE_MANIFEST='{"node_modules/next/dist/client/index.js -> ../pages/_app":{"id":5601,"files":["static/chunks/601.7542e5115bc4010b.js"]},"node_modules/next/dist/client/index.js -> ../pages/_error":{"id":3708,"files":["static/chunks/708.7fbcd8fe1b1b5714.js"]}}';
+self.__REACT_LOADABLE_MANIFEST='{"node_modules/next/dist/client/index.js -> ../pages/_app":{"id":15601,"files":["static/chunks/601.a3e777941377833c.js"]},"node_modules/next/dist/client/index.js -> ../pages/_error":{"id":73708,"files":["static/chunks/708.3060adffb87ae5de.js"]}}';
