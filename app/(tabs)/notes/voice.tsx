@@ -6,7 +6,6 @@ import { Mic, Plus } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import * as Speech from 'expo-speech';
 import { useAppContext } from '@/context/AppContext';
 
 export default function VoiceNoteScreen() {
@@ -35,38 +34,6 @@ export default function VoiceNoteScreen() {
     };
   }, [isRecording]);
 
-  useEffect(() => {
-    // Initialize speech recognition
-    const initializeSpeech = async () => {
-      try {
-        if (Platform.OS === 'web') {
-          // Check if browser supports Web Speech API
-          if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-            setError('Speech recognition is not supported in this browser');
-            return;
-          }
-        } else {
-          const voices = await Speech.getAvailableVoicesAsync();
-          if (voices.length === 0) {
-            setError('Speech recognition not available on this device');
-          }
-        }
-      } catch (err) {
-        setError('Failed to initialize speech recognition');
-        console.error('Speech init error:', err);
-      }
-    };
-
-    initializeSpeech();
-
-    // Cleanup
-    return () => {
-      if (isRecording && Platform.OS !== 'web') {
-        Speech.stop();
-      }
-    };
-  }, []);
-  
   const formatTime = (seconds: number) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -105,30 +72,16 @@ export default function VoiceNoteScreen() {
         recognition.onend = () => {
           setIsRecording(false);
         };
-        
+
         recognition.start();
         
         // Store recognition instance for cleanup
         (window as any).currentRecognition = recognition;
       } else {
-        // Native implementation
-        await Speech.speak('', {
-          onStart: () => {
-            console.log('Started listening...');
-          },
-          onStopped: () => {
-            setIsRecording(false);
-          },
-          onError: (error) => {
-            setError('Failed to record speech: ' + error);
-            setIsRecording(false);
-          },
-          onDone: (result) => {
-            if (result) {
-              setTranscribedText(result);
-            }
-          },
-        });
+        // Native platforms - for now, just simulate recording and let user type
+        setError('Speech recognition not yet supported on mobile. Please type your note manually.');
+        setIsRecording(false);
+        setTranscribedText('Type your note here...');
       }
     } catch (err) {
       setError('Failed to start recording');
@@ -146,8 +99,6 @@ export default function VoiceNoteScreen() {
           recognition.stop();
           delete (window as any).currentRecognition;
         }
-      } else {
-        await Speech.stop();
       }
       setIsRecording(false);
     } catch (err) {
@@ -195,8 +146,6 @@ export default function VoiceNoteScreen() {
           recognition.stop();
           delete (window as any).currentRecognition;
         }
-      } else {
-        await Speech.stop();
       }
       setIsRecording(false);
       setTranscribedText('');
