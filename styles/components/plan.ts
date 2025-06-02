@@ -187,7 +187,7 @@ export const planStyles = StyleSheet.create({
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: '#553402',
+    backgroundColor: '#996623',
     paddingVertical: spacing.xs,
     paddingHorizontal: spacing.sm,
     borderRadius: layout.borderRadius.sm,
