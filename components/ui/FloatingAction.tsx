@@ -18,16 +18,16 @@ export function FloatingAction() {
     
     switch (action) {
       case 'voice':
-        router.push('/(tabs)/notes/voice');
+        router.push('/(tabs)/notes/voice' as any);
         break;
       case 'note':
-        router.push('/(tabs)/notes/add');
+        router.push('/(tabs)/notes/add' as any);
         break;
       case 'lead':
-        router.push('/(tabs)/leads/add');
+        router.push('/(tabs)/leads/add' as any);
         break;
       case 'visit':
-        router.push('/(tabs)/plan/add-visit');
+        router.push('/(tabs)/plan/add-visit' as any);
         break;
       default:
         break;

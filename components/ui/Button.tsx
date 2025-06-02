@@ -111,8 +111,8 @@ export function Button({
               styles.text,
               getTextSizeStyle(),
               { color: getTextColor() },
-              leftIcon && styles.textWithLeftIcon,
-              rightIcon && styles.textWithRightIcon,
+              leftIcon ? styles.textWithLeftIcon : undefined,
+              rightIcon ? styles.textWithRightIcon : undefined,
               textStyle
             ]}
           >

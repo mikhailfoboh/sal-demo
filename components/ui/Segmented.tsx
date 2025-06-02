@@ -45,7 +45,7 @@ export function Segmented({ options, value, onChange, containerStyle }: Segmente
               style={[
                 styles.optionText,
                 {
-                  color: isSelected ? colors.white : colors.textSecondary,
+                  color: isSelected ? colors.buttonText : colors.textSecondary,
                 },
               ]}
             >

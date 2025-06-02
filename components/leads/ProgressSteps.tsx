@@ -32,7 +32,7 @@ export function ProgressSteps({ steps, currentStep }: ProgressStepsProps) {
                   <View
                     style={[
                       styles.innerCircle,
-                      { backgroundColor: colors.white },
+                      { backgroundColor: colors.cardBackground },
                     ]}
                   />
                 )}

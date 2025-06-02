@@ -71,9 +71,9 @@ export function Input({
             {
               color: colors.textPrimary,
             },
-            leftIcon && styles.inputWithLeftIcon,
-            rightIcon && styles.inputWithRightIcon,
-            multiline && styles.multilineInput,
+            leftIcon ? styles.inputWithLeftIcon : undefined,
+            rightIcon ? styles.inputWithRightIcon : undefined,
+            multiline ? styles.multilineInput : undefined,
             inputStyle,
           ]}
           value={value}

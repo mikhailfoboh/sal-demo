@@ -21,7 +21,7 @@ export function ActionItem({ title, description, icon, date, onPress }: ActionIt
     >
       <View style={styles.content}>
         {icon && (
-          <View style={[styles.iconContainer, { backgroundColor: colors.backgroundSecondary }]}>
+          <View style={[styles.iconContainer, { backgroundColor: colors.background }]}>
             {icon}
           </View>
         )}

@@ -114,18 +114,16 @@ export function FilterSheet({ visible, onClose, activeFilters, onApply }: Filter
 
         <View style={styles.footer}>
           <Button
+            title="Reset"
             variant="outline"
             onPress={handleReset}
             style={styles.resetButton}
-          >
-            Reset
-          </Button>
+          />
           <Button
+            title="Apply Filters"
             onPress={handleApply}
             style={styles.applyButton}
-          >
-            Apply Filters
-          </Button>
+          />
         </View>
       </View>
     </View>

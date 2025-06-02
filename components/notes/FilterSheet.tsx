@@ -3,7 +3,6 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { X } from 'lucide-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { Button } from '@/components/ui/Button';
-import { ActionItem } from '@/components/ui/ActionItem';
 import { Segmented } from '@/components/ui/Segmented';
 
 interface FilterSheetProps {
@@ -59,12 +58,23 @@ export function FilterSheet({ visible, onClose, activeFilters, onApply }: Filter
             <Text style={[styles.sectionTitle, { color: colors.textPrimary }]}>Note Type</Text>
             <View style={styles.typeGrid}>
               {['Meeting', 'Call', 'Email', 'Task', 'Other'].map((type) => (
-                <ActionItem
+                <TouchableOpacity
                   key={type}
-                  label={type}
-                  selected={localFilters.noteType.includes(type)}
+                  style={[
+                    styles.filterChip,
+                    localFilters.noteType.includes(type) && styles.filterChipActive
+                  ]}
                   onPress={() => handleNoteTypeToggle(type)}
-                />
+                >
+                  <Text
+                    style={[
+                      styles.filterChipText,
+                      localFilters.noteType.includes(type) && styles.filterChipTextActive
+                    ]}
+                  >
+                    {type}
+                  </Text>
+                </TouchableOpacity>
               ))}
             </View>
           </View>
@@ -99,18 +109,16 @@ export function FilterSheet({ visible, onClose, activeFilters, onApply }: Filter
 
         <View style={styles.footer}>
           <Button 
+            title="Reset"
             variant="secondary" 
             onPress={handleReset}
             style={styles.resetButton}
-          >
-            Reset
-          </Button>
+          />
           <Button 
+            title="Apply Filters"
             onPress={() => onApply(localFilters)}
             style={styles.applyButton}
-          >
-            Apply Filters
-          </Button>
+          />
         </View>
       </View>
     </View>
@@ -173,5 +181,24 @@ const styles = StyleSheet.create({
   },
   applyButton: {
     flex: 2,
+  },
+  filterChip: {
+    padding: 8,
+    borderWidth: 1,
+    borderColor: '#E5E7EB',
+    borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+  },
+  filterChipActive: {
+    borderColor: '#4F46E5',
+    backgroundColor: '#EEF2FF',
+  },
+  filterChipText: {
+    fontSize: 14,
+    fontFamily: 'Poppins-Medium',
+    color: '#6B7280',
+  },
+  filterChipTextActive: {
+    color: '#4F46E5',
   },
 });
