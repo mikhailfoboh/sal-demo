@@ -1,5 +1,13 @@
 {
   "/_not-found/page": "/_not-found",
-  "/plan/page": "/plan",
-  "/page": "/"
+  "/customers/[id]/page": "/customers/[id]",
+  "/leads/page": "/leads",
+  "/customers/page": "/customers",
+  "/notes/[id]/page": "/notes/[id]",
+  "/leads/[id]/page": "/leads/[id]",
+  "/notes/voice/page": "/notes/voice",
+  "/page": "/",
+  "/plan/add-visit/page": "/plan/add-visit",
+  "/notes/page": "/notes",
+  "/plan/page": "/plan"
 }
