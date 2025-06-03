@@ -22,11 +22,12 @@ declare module 'phosphor-react-native' {
   export const ClockCounterClockwise: ComponentType<IconProps>;
   export const CheckCircle: ComponentType<IconProps>;
   export const CalendarPlus: ComponentType<IconProps>;
+  export const Plus: ComponentType<IconProps>;
+  export const PlusCircle: ComponentType<IconProps>;
   
   // Add other icons as needed
   export const Home: ComponentType<IconProps>;
   export const User: ComponentType<IconProps>;
-  export const Plus: ComponentType<IconProps>;
   export const Search: ComponentType<IconProps>;
   export const Settings: ComponentType<IconProps>;
 } 

@@ -268,6 +268,8 @@ export const planStyles = StyleSheet.create({
     paddingVertical: 2,
     borderRadius: layout.borderRadius.full,
     alignSelf: 'flex-start',
+    borderWidth: 1,
+    borderColor: 'rgba(0, 0, 0, 0.1)',
   },
   priorityText: {
     fontFamily: 'Inter-Medium',

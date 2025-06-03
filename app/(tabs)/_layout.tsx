@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet, View, Platform } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { CalendarCheck, Target, UserCircle, Notepad } from 'phosphor-react-native';
+import { CalendarCheck, Target, UserCircle, Notepad, PlusCircle } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
@@ -12,12 +12,22 @@ export default function TabLayout() {
     const icons = {
       plan: CalendarCheck,
       leads: Target,
+      action: PlusCircle,
       customers: UserCircle,
       notes: Notepad,
     };
 
     const Icon = icons[route as keyof typeof icons];
     if (!Icon) return null;
+
+    // Special styling for the action tab to make it stand out
+    if (route === 'action') {
+      return (
+        <View style={styles.actionTabIcon}>
+          <Icon size={32} color="#087057" weight={focused ? "fill" : "regular"} />
+        </View>
+      );
+    }
 
     return <Icon size={size} color={color} weight={focused ? "fill" : "regular"} />;
   };
@@ -34,7 +44,8 @@ export default function TabLayout() {
             styles.tabBar,
             { 
               backgroundColor: colors.cardBackground,
-              borderTopColor: Platform.OS === 'ios' ? colors.border : 'transparent',
+              borderTopColor: '#7AA496',
+              borderTopWidth: 2,
               height: 60 + insets.bottom,
               paddingBottom: insets.bottom,
             }
@@ -54,6 +65,14 @@ export default function TabLayout() {
           options={{
             title: 'Leads',
             tabBarIcon: ({ color, size, focused }) => renderIcon('leads', color, size, focused),
+          }}
+        />
+        <Tabs.Screen
+          name="action"
+          options={{
+            title: 'Actions',
+            tabBarIcon: ({ color, size, focused }) => renderIcon('action', color, size, focused),
+            tabBarLabel: '',
           }}
         />
         <Tabs.Screen
@@ -88,5 +107,13 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Medium',
     fontSize: 12,
     marginTop: 4,
+  },
+  actionTabIcon: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#C6E1D5',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });

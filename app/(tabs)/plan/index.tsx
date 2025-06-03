@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus } from 'lucide-react-native';
 import { ClockCounterClockwise, CheckCircle, CalendarPlus } from 'phosphor-react-native';
 import { format, addDays, isSameDay } from 'date-fns';
 import { useTheme } from '@/hooks/useTheme';
@@ -101,13 +100,6 @@ export default function PlanScreen() {
           message="Tap the + button to add a visit or task to your schedule."
         />
       )}
-
-      <TouchableOpacity 
-        style={planStyles.fab}
-        onPress={() => router.push('./add-visit')}
-      >
-        <Plus size={24} color="#FFFFFF" />
-      </TouchableOpacity>
     </SafeAreaView>
   );
 } 
