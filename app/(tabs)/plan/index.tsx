@@ -2,7 +2,8 @@ import { View, Text, TouchableOpacity } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Plus, Clock, CheckCircle, Calendar } from 'lucide-react-native';
+import { Plus } from 'lucide-react-native';
+import { ClockCounterClockwise, CheckCircle, CalendarPlus } from 'phosphor-react-native';
 import { format, addDays, isSameDay } from 'date-fns';
 import { useTheme } from '@/hooks/useTheme';
 import { DailyPlanView } from '@/components/plan/DailyPlanView';
@@ -49,7 +50,7 @@ export default function PlanScreen() {
             <Text style={[planStyles.statValue, planStyles.statLabelOrange]}>{pendingTasks}</Text>
             <Text style={[planStyles.statLabel, planStyles.statLabelOrange]}>Pending</Text>
             <View style={[planStyles.statIconContainer, planStyles.pendingIconContainer]}>
-              <Clock size={20} color="#FFFFFF" />
+              <ClockCounterClockwise size={20} color="#FFFFFF" />
             </View>
           </View>
           <View style={[planStyles.statCard, planStyles.completedCard]}>
@@ -63,7 +64,7 @@ export default function PlanScreen() {
             <Text style={[planStyles.statValue, planStyles.statLabelGray]}>{weekTasks}</Text>
             <Text style={[planStyles.statLabel, planStyles.statLabelGray]}>This Week</Text>
             <View style={[planStyles.statIconContainer, planStyles.weekIconContainer]}>
-              <Calendar size={20} color="#FFFFFF" />
+              <CalendarPlus size={20} color="#FFFFFF" />
             </View>
           </View>
         </View>

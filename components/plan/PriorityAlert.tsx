@@ -32,7 +32,6 @@ export function PriorityAlert({ priority, onPress }: PriorityAlertProps) {
         
         <TouchableOpacity style={planStyles.priorityButton} onPress={onPress}>
           <Text style={planStyles.priorityButtonText}>{priority.action}</Text>
-          <ChevronRight size={16} color="#FDEFE2" />
         </TouchableOpacity>
       </View>
     </View>

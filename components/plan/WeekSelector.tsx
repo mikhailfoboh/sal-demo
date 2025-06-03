@@ -1,6 +1,6 @@
 import { View, Text, TouchableOpacity } from 'react-native';
-import { format, addDays, isSameDay, startOfWeek, endOfWeek, getWeekOfMonth, addWeeks, subWeeks } from 'date-fns';
-import { Calendar, ChevronLeft, ChevronRight } from 'lucide-react-native';
+import { format, addDays, isSameDay, startOfWeek, endOfWeek, getWeekOfMonth, addWeeks, subWeeks, startOfDay, isBefore } from 'date-fns';
+import { Calendar, ArrowCircleLeft, ArrowCircleRight } from 'phosphor-react-native';
 import { useTheme } from '@/hooks/useTheme';
 import { planStyles } from '@/styles/components/plan';
 
@@ -46,17 +46,19 @@ export function WeekSelector({ selectedDate, onSelectDate }: WeekSelectorProps) 
     <View style={planStyles.weekSelectorContainer}>
       <View style={planStyles.weekHeader}>
         <View style={planStyles.monthContainer}>
-          <Calendar size={20} color={colors.textSecondary} />
+          <View style={planStyles.monthIconContainer}>
+            <Calendar size={18} color="white" />
+          </View>
           <Text style={planStyles.monthText}>{currentMonth}</Text>
         </View>
         
         <View style={planStyles.weekNavigation}>
           <TouchableOpacity onPress={handlePreviousWeek} style={planStyles.navButton}>
-            <ChevronLeft size={16} color={colors.textSecondary} />
+            <ArrowCircleLeft size={24} color={colors.textSecondary} />
           </TouchableOpacity>
           <Text style={planStyles.weekText}>Week {weekNumber}</Text>
           <TouchableOpacity onPress={handleNextWeek} style={planStyles.navButton}>
-            <ChevronRight size={16} color={colors.textSecondary} />
+            <ArrowCircleRight size={24} color={colors.textSecondary} />
           </TouchableOpacity>
         </View>
       </View>
@@ -65,7 +67,7 @@ export function WeekSelector({ selectedDate, onSelectDate }: WeekSelectorProps) 
         {dates.map((date) => {
           const isSelected = isSameDay(date, selectedDate);
           const isToday = isSameDay(date, today);
-          const isPast = date < today && !isSelected;
+          const isPast = isBefore(date, startOfDay(today)) && !isSelected;
           
           return (
             <TouchableOpacity
@@ -76,7 +78,6 @@ export function WeekSelector({ selectedDate, onSelectDate }: WeekSelectorProps) 
                 isPast && planStyles.pastDate
               ]}
               onPress={() => onSelectDate(date)}
-              disabled={isPast}
             >
               <Text style={[
                 planStyles.dayText,

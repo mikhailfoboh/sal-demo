@@ -4,14 +4,14 @@ export function useTheme() {
   const colors = useMemo(() => {
     return {
       // Primary colors
-      primary: '#4F46E5', // Indigo
-      primaryLight: '#EEF2FF',
-      primaryDark: '#3730A3',
+      primary: '#087057', // Green
+      primaryLight: '#E8F5F1',
+      primaryDark: '#065A47',
       
       // Secondary colors
-      secondary: '#EEF2FF',
-      secondaryLight: '#F5F3FF',
-      secondaryDark: '#C7D2FE',
+      secondary: '#E8F5F1',
+      secondaryLight: '#F0F7F4',
+      secondaryDark: '#C6E1D5',
       
       // Text colors
       textPrimary: '#111827',

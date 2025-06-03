@@ -9,7 +9,7 @@ export const planStyles = StyleSheet.create({
   },
   header: {
     padding: spacing.lg,
-    paddingBottom: spacing.md,
+    paddingBottom: spacing.md + 40,
     backgroundColor: '#087057',
   },
   titleRow: {
@@ -173,7 +173,7 @@ export const planStyles = StyleSheet.create({
     marginBottom: spacing.md,
   },
   priorityTitle: {
-    fontFamily: 'Inter-SemiBold',
+    fontFamily: 'Inter-Medium',
     fontSize: 14,
     color: '#553402',
     marginBottom: spacing.xs,
@@ -205,6 +205,16 @@ export const planStyles = StyleSheet.create({
   },
   dailyPlanContent: {
     paddingBottom: spacing.xxl,
+    paddingHorizontal: 24,
+  },
+  dayHeaderContainer: {
+    paddingTop: spacing.md,
+    paddingBottom: spacing.sm,
+  },
+  dayHeaderText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    color: colors.textPrimary,
   },
   timeBlock: {
     paddingHorizontal: spacing.lg,
@@ -220,53 +230,85 @@ export const planStyles = StyleSheet.create({
   itemCard: {
     padding: spacing.md,
   },
+  itemCardDefault: {
+    backgroundColor: '#F0F7F4',
+    borderColor: '#C6E1D5',
+  },
+  itemCardCurrentTime: {
+    backgroundColor: '#FDEFE2',
+    borderColor: '#F4A565',
+  },
   itemHeader: {
     flexDirection: 'row',
+    alignItems: 'flex-start',
     justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: spacing.sm,
+    width: '100%',
+  },
+  // First column: Time + Status
+  timeColumn: {
+    flex: 2,
+    minWidth: 70,
+    alignItems: 'flex-start',
+    paddingRight: spacing.sm,
+    justifyContent: 'space-between',
+    alignSelf: 'stretch',
   },
   timeContainer: {
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: spacing.xs,
   },
   timeText: {
     ...typography.caption,
     marginLeft: spacing.xs,
-  },
-  rightContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+    fontSize: 12,
   },
   priorityTag: {
-    paddingHorizontal: spacing.sm,
-    paddingVertical: spacing.xs,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: 2,
     borderRadius: layout.borderRadius.full,
+    alignSelf: 'flex-start',
   },
   priorityText: {
     fontFamily: 'Inter-Medium',
-    fontSize: 12,
+    fontSize: 10,
     textTransform: 'capitalize',
+  },
+  // Second column: Venue + Address
+  contentColumn: {
+    flex: 7,
+    alignItems: 'flex-start',
+    paddingHorizontal: spacing.xs,
+  },
+  itemTitle: {
+    ...typography.body2,
+    fontFamily: 'Inter-Medium',
+    marginBottom: spacing.xs,
+    fontSize: 16,
+  },
+  locationContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flexWrap: 'wrap',
+  },
+  locationText: {
+    ...typography.caption,
+    flexShrink: 1,
+    fontSize: 12,
+  },
+  // Third column: Icon
+  iconColumn: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingLeft: spacing.xs,
+    alignSelf: 'stretch',
   },
   completeButton: {
     padding: spacing.xs,
   },
   itemContent: {
     opacity: 1,
-  },
-  itemTitle: {
-    ...typography.body2,
-    fontFamily: 'Inter-Medium',
-    marginBottom: spacing.xs,
-  },
-  locationContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  locationText: {
-    ...typography.caption,
-    marginLeft: spacing.xs,
   },
   description: {
     ...typography.caption,
@@ -280,25 +322,44 @@ export const planStyles = StyleSheet.create({
 
   // WeekSelector styles
   weekSelectorContainer: {
-    paddingVertical: spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: colors.border,
-    backgroundColor: colors.cardBackground,
+    marginHorizontal: 24,
+    marginBottom: spacing.md,
+    marginTop: -48,
+    backgroundColor: '#F0F7F4',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#C6E1D5',
+    overflow: 'hidden',
   },
   weekHeader: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
     paddingBottom: spacing.md,
   },
   monthContainer: {
     flexDirection: 'row',
     alignItems: 'center',
   },
+  monthIconContainer: {
+    width: 24,
+    height: 24,
+    borderRadius: 6,
+    backgroundColor: '#393939',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginRight: spacing.xs,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
   monthText: {
-    fontFamily: 'Inter-SemiBold',
-    fontSize: 18,
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
     color: colors.textPrimary,
     marginLeft: spacing.sm,
   },
@@ -316,9 +377,12 @@ export const planStyles = StyleSheet.create({
     marginHorizontal: spacing.sm,
   },
   daysContainer: {
+    backgroundColor: '#FFFFFF',
+    margin: 4,
+    borderRadius: 12,
     flexDirection: 'row',
     justifyContent: 'space-between',
-    paddingHorizontal: spacing.lg,
+    padding: 4,
   },
   dateButton: {
     alignItems: 'center',
@@ -358,5 +422,37 @@ export const planStyles = StyleSheet.create({
     height: 4,
     borderRadius: 2,
     marginTop: spacing.xs,
+  },
+
+  // Suggested Actions Checklist
+  suggestedActions: {
+    marginTop: spacing.sm,
+  },
+  actionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.xs,
+  },
+  actionCheckbox: {
+    width: 16,
+    height: 16,
+    borderRadius: 3,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    marginRight: spacing.sm,
+    backgroundColor: 'transparent',
+  },
+  actionCheckboxChecked: {
+    backgroundColor: '#10B981',
+    borderColor: '#10B981',
+  },
+  actionText: {
+    ...typography.caption,
+    fontSize: 12,
+    flex: 1,
+  },
+  actionTextCompleted: {
+    textDecorationLine: 'line-through',
+    color: '#9CA3AF',
   },
 }); 

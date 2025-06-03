@@ -5,6 +5,7 @@ import { format, parse } from 'date-fns';
 import { Plan } from '@/types/plan';
 import { useTheme } from '@/hooks/useTheme';
 import { planStyles } from '@/styles/components/plan';
+import { mockCustomers } from '@/data/mockCustomers';
 
 interface DailyPlanViewProps {
   plan: Plan;
@@ -16,6 +17,11 @@ interface DailyPlanViewProps {
 export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplete }: DailyPlanViewProps) {
   const { colors } = useTheme();
 
+  // Helper function to get customer by ID
+  const getCustomerById = (customerId: string) => {
+    return mockCustomers.find(customer => customer.id === customerId);
+  };
+
   const formatTime = (timeString: string) => {
     try {
       const date = parse(timeString, 'HH:mm', new Date());
@@ -25,25 +31,27 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
     }
   };
 
-  const getTimeBlock = (time: string) => {
-    const hour = parseInt(time.split(':')[0]);
-    if (hour < 12) return 'MORNING';
-    if (hour < 17) return 'AFTERNOON';
-    return 'EVENING';
+  // Helper function to check if item is at current time
+  const isCurrentTime = (itemTime: string) => {
+    const now = new Date();
+    const currentHour = now.getHours();
+    const currentMinutes = now.getMinutes();
+    const currentTimeInMinutes = currentHour * 60 + currentMinutes;
+    
+    const [itemHour, itemMinutes] = itemTime.split(':').map(Number);
+    const itemTimeInMinutes = itemHour * 60 + itemMinutes;
+    
+    // Consider "current time" as within 30 minutes before or after
+    const timeDiff = Math.abs(currentTimeInMinutes - itemTimeInMinutes);
+    return timeDiff <= 30;
   };
 
-  // Group visits and tasks by time block
-  const groupedItems = [...plan.visits, ...plan.tasks].reduce((acc, item) => {
-    const timeBlock = getTimeBlock(item.time || '09:00');
-    if (!acc[timeBlock]) acc[timeBlock] = [];
-    acc[timeBlock].push(item);
-    return acc;
-  }, {} as Record<string, any[]>);
-
-  // Sort time blocks
-  const timeBlocks = ['MORNING', 'AFTERNOON', 'EVENING'].filter(block => 
-    groupedItems[block]?.length > 0
-  );
+  // Combine all visits and tasks, then sort by time
+  const allItems = [...plan.visits, ...plan.tasks].sort((a, b) => {
+    const timeA = a.time || '09:00';
+    const timeB = b.time || '09:00';
+    return timeA.localeCompare(timeB);
+  });
 
   const getPriorityTag = (priority: string) => {
     switch (priority) {
@@ -70,20 +78,30 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
       contentContainerStyle={planStyles.dailyPlanContent}
       showsVerticalScrollIndicator={false}
     >
-      {timeBlocks.map(block => (
-        <View key={block} style={planStyles.timeBlock}>
-          <Text style={planStyles.blockTitle}>{block}</Text>
-          
-          {groupedItems[block].map((item: any) => (
-            <TouchableOpacity
-              key={item.id}
-              style={planStyles.itemContainer}
-              onPress={() => 'customerName' in item ? onVisitPress(item.customerId) : onTaskPress(item.id)}
-            >
-              <Card style={planStyles.itemCard}>
-                <View style={planStyles.itemHeader}>
+      {/* Dynamic Activity Count Header */}
+      <View style={planStyles.dayHeaderContainer}>
+        <Text style={planStyles.dayHeaderText}>
+          Your Day ({plan.visits.length + plan.tasks.length} Activit{plan.visits.length + plan.tasks.length === 1 ? 'y' : 'ies'})
+        </Text>
+      </View>
+
+      {allItems.map((item: any) => {
+        const isCurrent = isCurrentTime(item.time || '09:00');
+        
+        return (
+          <TouchableOpacity
+            key={item.id}
+            style={planStyles.itemContainer}
+            onPress={() => 'customerName' in item ? onVisitPress(item.customerId) : onTaskPress(item.id)}
+          >
+            <Card style={{
+              ...planStyles.itemCard,
+              ...(isCurrent ? planStyles.itemCardCurrentTime : planStyles.itemCardDefault)
+            }}>
+              <View style={planStyles.itemHeader}>
+                {/* First Column: Time + Status */}
+                <View style={planStyles.timeColumn}>
                   <View style={planStyles.timeContainer}>
-                    <Clock size={14} color={colors.textSecondary} />
                     <Text style={[
                       planStyles.timeText,
                       item.completed && planStyles.completedText
@@ -91,36 +109,23 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
                       {formatTime(item.time)}
                     </Text>
                   </View>
-                  
-                  <View style={planStyles.rightContainer}>
-                    {item.priority && (
-                      <View style={[
-                        planStyles.priorityTag,
-                        { backgroundColor: getPriorityTag(item.priority).bg }
+                  {item.priority && (
+                    <View style={[
+                      planStyles.priorityTag,
+                      { backgroundColor: getPriorityTag(item.priority).bg }
+                    ]}>
+                      <Text style={[
+                        planStyles.priorityText,
+                        { color: getPriorityTag(item.priority).text }
                       ]}>
-                        <Text style={[
-                          planStyles.priorityText,
-                          { color: getPriorityTag(item.priority).text }
-                        ]}>
-                          {item.priority}
-                        </Text>
-                      </View>
-                    )}
-                    
-                    <TouchableOpacity
-                      onPress={() => handleToggleComplete(item.id, 'customerName' in item ? 'visit' : 'task')}
-                      style={planStyles.completeButton}
-                    >
-                      <CheckCircle 
-                        size={20} 
-                        color={item.completed ? colors.success : colors.textSecondary}
-                        fill={item.completed ? colors.success : 'transparent'}
-                      />
-                    </TouchableOpacity>
-                  </View>
+                        {item.priority}
+                      </Text>
+                    </View>
+                  )}
                 </View>
 
-                <View style={planStyles.itemContent}>
+                {/* Second Column: Venue + Address */}
+                <View style={planStyles.contentColumn}>
                   {'customerName' in item ? (
                     <>
                       <Text style={[
@@ -132,7 +137,6 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
                       </Text>
                       {item.location && (
                         <View style={planStyles.locationContainer}>
-                          <MapPin size={14} color={item.completed ? colors.textTertiary : colors.textSecondary} />
                           <Text style={[
                             planStyles.locationText,
                             item.completed && planStyles.completedText
@@ -141,6 +145,34 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
                           </Text>
                         </View>
                       )}
+                      {(() => {
+                        const customer = getCustomerById(item.customerId);
+                        const suggestedActions = customer?.suggestedActions || [];
+                        
+                        return suggestedActions.length > 0 && (
+                          <View style={planStyles.suggestedActions}>
+                            {suggestedActions.map((action: { title: string; description: string; icon: string }, index: number) => (
+                              <View key={index} style={planStyles.actionItem}>
+                                <View style={[
+                                  planStyles.actionCheckbox,
+                                  // For now, all actions are unchecked. In a real app, you'd track completion state
+                                  false && planStyles.actionCheckboxChecked
+                                ]}>
+                                  {false && (
+                                    <Text style={{ color: 'white', fontSize: 10, textAlign: 'center' }}>✓</Text>
+                                  )}
+                                </View>
+                                <Text style={[
+                                  planStyles.actionText,
+                                  false && planStyles.actionTextCompleted
+                                ]}>
+                                  {action.title}
+                                </Text>
+                              </View>
+                            ))}
+                          </View>
+                        );
+                      })()}
                     </>
                   ) : (
                     <>
@@ -162,11 +194,25 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
                     </>
                   )}
                 </View>
-              </Card>
-            </TouchableOpacity>
-          ))}
-        </View>
-      ))}
+
+                {/* Third Column: Icon */}
+                <View style={planStyles.iconColumn}>
+                  <TouchableOpacity
+                    onPress={() => handleToggleComplete(item.id, 'customerName' in item ? 'visit' : 'task')}
+                    style={planStyles.completeButton}
+                  >
+                    <CheckCircle 
+                      size={20} 
+                      color={item.completed ? colors.success : colors.textSecondary}
+                      fill={item.completed ? colors.success : 'transparent'}
+                    />
+                  </TouchableOpacity>
+                </View>
+              </View>
+            </Card>
+          </TouchableOpacity>
+        );
+      })}
     </ScrollView>
   );
 }

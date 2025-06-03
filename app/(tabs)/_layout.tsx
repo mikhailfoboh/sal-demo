@@ -1,25 +1,25 @@
 import { Tabs } from 'expo-router';
 import { StyleSheet, View, Platform } from 'react-native';
 import { useTheme } from '@/hooks/useTheme';
-import { Chrome as Home, Target, Users, ClipboardList } from 'lucide-react-native';
+import { CalendarCheck, Target, UserCircle, Notepad } from 'phosphor-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 export default function TabLayout() {
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const renderIcon = (route: string, color: string, size: number) => {
+  const renderIcon = (route: string, color: string, size: number, focused: boolean = false) => {
     const icons = {
-      plan: Home,
+      plan: CalendarCheck,
       leads: Target,
-      customers: Users,
-      notes: ClipboardList,
+      customers: UserCircle,
+      notes: Notepad,
     };
 
     const Icon = icons[route as keyof typeof icons];
     if (!Icon) return null;
 
-    return <Icon size={size} color={color} />;
+    return <Icon size={size} color={color} weight={focused ? "fill" : "regular"} />;
   };
 
   return (
@@ -46,28 +46,28 @@ export default function TabLayout() {
           name="plan"
           options={{
             title: 'Plan',
-            tabBarIcon: ({ color, size }) => renderIcon('plan', color, size),
+            tabBarIcon: ({ color, size, focused }) => renderIcon('plan', color, size, focused),
           }}
         />
         <Tabs.Screen
           name="leads"
           options={{
             title: 'Leads',
-            tabBarIcon: ({ color, size }) => renderIcon('leads', color, size),
+            tabBarIcon: ({ color, size, focused }) => renderIcon('leads', color, size, focused),
           }}
         />
         <Tabs.Screen
           name="customers"
           options={{
             title: 'Customers',
-            tabBarIcon: ({ color, size }) => renderIcon('customers', color, size),
+            tabBarIcon: ({ color, size, focused }) => renderIcon('customers', color, size, focused),
           }}
         />
         <Tabs.Screen
           name="notes"
           options={{
             title: 'Notes',
-            tabBarIcon: ({ color, size }) => renderIcon('notes', color, size),
+            tabBarIcon: ({ color, size, focused }) => renderIcon('notes', color, size, focused),
           }}
         />
       </Tabs>

@@ -2,14 +2,14 @@ import { StyleSheet } from 'react-native';
 
 export const colors = {
   // Primary colors
-  primary: '#4F46E5',
-  primaryLight: '#EEF2FF',
-  primaryDark: '#3730A3',
+  primary: '#087057',
+  primaryLight: '#E8F5F1',
+  primaryDark: '#065A47',
   
   // Secondary colors
-  secondary: '#EEF2FF',
-  secondaryLight: '#F5F3FF',
-  secondaryDark: '#C7D2FE',
+  secondary: '#E8F5F1',
+  secondaryLight: '#F0F7F4',
+  secondaryDark: '#C6E1D5',
   
   // Text colors
   textPrimary: '#111827',
