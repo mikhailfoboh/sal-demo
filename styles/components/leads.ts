@@ -41,25 +41,50 @@ export const leadStyles = StyleSheet.create({
   // Filter Tabs
   filterContainer: {
     flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginHorizontal: 24,
+    marginBottom: spacing.md,
+    marginTop: -30,
+    backgroundColor: '#F0F7F4',
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: '#C6E1D5',
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
-    gap: spacing.sm,
+    overflow: 'hidden',
   },
   filterTab: {
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.sm,
     borderRadius: layout.borderRadius.full,
-    backgroundColor: colors.defaultTagBackground,
+    backgroundColor: 'transparent',
+    borderWidth: 1,
+    borderColor: 'transparent',
   },
   filterTabActive: {
-    backgroundColor: colors.textPrimary,
+    backgroundColor: '#C6E1D5',
+    borderColor: '#638174',
   },
   filterText: {
-    ...typography.body2,
-    color: colors.textSecondary,
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#09352A',
   },
   filterTextActive: {
-    color: colors.buttonText,
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#09352A',
+  },
+
+  // Section Header
+  sectionHeader: {
+    paddingHorizontal: 24,
+    paddingVertical: spacing.md,
+  },
+  sectionTitle: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 16,
+    color: colors.textPrimary,
   },
 
   // Lead Card
@@ -70,7 +95,7 @@ export const leadStyles = StyleSheet.create({
     borderRadius: layout.borderRadius.lg,
     padding: spacing.lg,
     borderWidth: 1,
-    borderColor: '#C6E1D5',
+    borderColor: '#658F81',
     ...layout.shadow.sm,
   },
   cardHeader: {
@@ -156,6 +181,7 @@ export const leadStyles = StyleSheet.create({
   nextAction: {
     flexDirection: 'row',
     alignItems: 'center',
+    gap: spacing.sm,
   },
   nextActionLabel: {
     ...typography.body2,
@@ -167,6 +193,59 @@ export const leadStyles = StyleSheet.create({
     marginLeft: spacing.xs,
   },
 
+  // CTA Button
+  ctaButton: {
+    backgroundColor: '#09352A',
+    borderColor: '#09352A',
+    borderWidth: 1,
+    borderRadius: layout.borderRadius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    alignSelf: 'flex-start',
+  },
+  ctaButtonText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#FFFFFF',
+  },
+
+  // Secondary Button (Ghosted)
+  secondaryButton: {
+    backgroundColor: 'transparent',
+    borderColor: '#09352A',
+    borderWidth: 1,
+    borderRadius: layout.borderRadius.sm,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    alignSelf: 'flex-start',
+  },
+  secondaryButtonText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#09352A',
+  },
+
+  // Additional Data Sections
+  additionalData: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.sm,
+  },
+  dataSection: {
+    marginBottom: spacing.sm,
+  },
+  dataLabel: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 13,
+    color: '#5E5E5E',
+    marginBottom: 2,
+  },
+  dataValue: {
+    fontFamily: 'Inter-Regular',
+    fontSize: 14,
+    color: colors.textPrimary,
+    lineHeight: 20,
+  },
+
   // Search Bar
   searchContainer: {
     position: 'absolute',
@@ -175,8 +254,10 @@ export const leadStyles = StyleSheet.create({
     right: spacing.lg,
   },
   searchInput: {
-    backgroundColor: colors.cardBackground,
-    borderRadius: layout.borderRadius.full,
+    backgroundColor: '#F0F7F4',
+    borderColor: '#638174',
+    borderWidth: 1,
+    borderRadius: 12,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     ...typography.body1,

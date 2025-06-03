@@ -4,8 +4,9 @@ import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { LeadCard } from '@/components/leads/LeadCard';
 import { leadStyles } from '@/styles/components/leads';
+import { planStyles } from '@/styles/components/plan';
 
-const FILTER_OPTIONS = ['All', 'New', 'Contacted', 'Sampling', 'Won'];
+const FILTER_OPTIONS = ['All', 'New Openings', 'Most Popular', 'Nearby'];
 
 // Mock data - replace with real data later
 const MOCK_LEADS = [
@@ -18,6 +19,9 @@ const MOCK_LEADS = [
     reviewCount: 128,
     status: 'new' as const,
     nextAction: 'Visit Venue',
+    productMatch: '3 from menu',
+    upcomingEvent: 'Exhibiting at Taste of Sydney - June 14-16',
+    localBuzz: 'Featured in Broadsheet\'s top 10 pizza spots',
   },
   {
     id: '2',
@@ -28,6 +32,7 @@ const MOCK_LEADS = [
     reviewCount: 128,
     status: 'contacted' as const,
     nextAction: 'Send Sample',
+    note: 'Interested in Premium Mozzarella',
   },
   {
     id: '3',
@@ -38,6 +43,7 @@ const MOCK_LEADS = [
     reviewCount: 128,
     status: 'sampling' as const,
     nextAction: 'Send Sample',
+    reminder: 'Follow up in 3 days',
   },
   {
     id: '4',
@@ -48,6 +54,7 @@ const MOCK_LEADS = [
     reviewCount: 128,
     status: 'won' as const,
     nextAction: 'Send Sample',
+    reminder: 'Follow up in 3 days',
   },
 ];
 
@@ -72,8 +79,16 @@ export default function LeadsScreen() {
 
   return (
     <SafeAreaView style={leadStyles.container} edges={['top']}>
-      <View style={leadStyles.header}>
-        <Text style={leadStyles.headerTitle}>Discovery Leads</Text>
+      <View style={[planStyles.header, { paddingBottom: 32 }]}>
+        <View style={planStyles.profileSection}>
+          <View style={planStyles.avatar}>
+            <Text style={planStyles.avatarText}>MS</Text>
+          </View>
+          <View style={planStyles.userInfo}>
+            <Text style={planStyles.userName}>Mark Smith</Text>
+            <Text style={planStyles.userTitle}>Sales Rep at TwoZipz Inc.</Text>
+          </View>
+        </View>
       </View>
 
       <View style={leadStyles.filterContainer}>
@@ -98,6 +113,10 @@ export default function LeadsScreen() {
         ))}
       </View>
 
+      <View style={leadStyles.sectionHeader}>
+        <Text style={leadStyles.sectionTitle}>Your Leads</Text>
+      </View>
+
       <ScrollView>
         {filteredLeads.map((lead) => (
           <LeadCard
@@ -109,6 +128,11 @@ export default function LeadsScreen() {
             reviewCount={lead.reviewCount}
             status={lead.status}
             nextAction={lead.nextAction}
+            productMatch={lead.productMatch}
+            upcomingEvent={lead.upcomingEvent}
+            localBuzz={lead.localBuzz}
+            note={lead.note}
+            reminder={lead.reminder}
             onPress={() => router.push(`/leads/${lead.id}`)}
           />
         ))}

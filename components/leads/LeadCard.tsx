@@ -11,6 +11,11 @@ interface LeadCardProps {
   reviewCount: number;
   status: 'new' | 'contacted' | 'sampling' | 'won';
   nextAction: string;
+  productMatch?: string;
+  upcomingEvent?: string;
+  localBuzz?: string;
+  note?: string;
+  reminder?: string;
   onPress: () => void;
 }
 
@@ -22,6 +27,11 @@ export function LeadCard({
   reviewCount,
   status,
   nextAction,
+  productMatch,
+  upcomingEvent,
+  localBuzz,
+  note,
+  reminder,
   onPress,
 }: LeadCardProps) {
   const { colors } = useTheme();
@@ -91,9 +101,51 @@ export function LeadCard({
         </View>
       </View>
 
+      {/* Additional Data Sections */}
+      <View style={leadStyles.additionalData}>
+        {productMatch && (
+          <View style={leadStyles.dataSection}>
+            <Text style={leadStyles.dataLabel}>Product match</Text>
+            <Text style={leadStyles.dataValue}>{productMatch}</Text>
+          </View>
+        )}
+        
+        {upcomingEvent && (
+          <View style={leadStyles.dataSection}>
+            <Text style={leadStyles.dataLabel}>Upcoming Event</Text>
+            <Text style={leadStyles.dataValue}>{upcomingEvent}</Text>
+          </View>
+        )}
+        
+        {localBuzz && (
+          <View style={leadStyles.dataSection}>
+            <Text style={leadStyles.dataLabel}>Local Buzz</Text>
+            <Text style={leadStyles.dataValue}>{localBuzz}</Text>
+          </View>
+        )}
+        
+        {note && (
+          <View style={leadStyles.dataSection}>
+            <Text style={leadStyles.dataLabel}>Note</Text>
+            <Text style={leadStyles.dataValue}>{note}</Text>
+          </View>
+        )}
+        
+        {reminder && (
+          <View style={leadStyles.dataSection}>
+            <Text style={leadStyles.dataLabel}>Reminder</Text>
+            <Text style={leadStyles.dataValue}>{reminder}</Text>
+          </View>
+        )}
+      </View>
+
       <View style={leadStyles.nextAction}>
-        <Text style={leadStyles.nextActionLabel}>Next Action:</Text>
-        <Text style={leadStyles.actionText}>{nextAction}</Text>
+        <TouchableOpacity style={leadStyles.ctaButton}>
+          <Text style={leadStyles.ctaButtonText}>{nextAction}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={leadStyles.secondaryButton}>
+          <Text style={leadStyles.secondaryButtonText}>View Details</Text>
+        </TouchableOpacity>
       </View>
     </TouchableOpacity>
   );

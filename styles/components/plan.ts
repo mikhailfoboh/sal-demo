@@ -59,7 +59,6 @@ export const planStyles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     gap: spacing.md,
-    paddingHorizontal: spacing.lg,
   },
   statCard: {
     flex: 1,
@@ -155,7 +154,6 @@ export const planStyles = StyleSheet.create({
 
   // PriorityAlert styles
   priorityAlert: {
-    marginHorizontal: spacing.lg,
     marginBottom: spacing.md,
     backgroundColor: '#FDEFE2',
     borderRadius: layout.borderRadius.md,
