@@ -3,13 +3,76 @@ import { Lead } from '@/types/lead';
 export const mockLeads: Lead[] = [
   {
     id: '1',
-    name: 'La Lune',
-    venue: 'Fine Dining Restaurant',
-    venueType: 'Fine Dining Restaurant',
-    address: '123 Main St, San Francisco, CA',
-    stage: 'Contacted',
+    name: 'Café Verde Oliva',
+    venue: 'Pizza Restaurant',
+    venueType: 'Pizza Restaurant',
+    address: 'Surry Hills, Sydney',
+    stage: 'New',
     createdAt: '3 weeks ago',
     lastInteraction: 'Yesterday',
+    isNew: true,
+    location: 'Surry Hills',
+    category: 'Pizza',
+    bestTime: '3:00-5:00',
+    rating: 4.5,
+    reviewCount: 128,
+    recentReview: {
+      date: '2 days ago',
+      text: 'We absolutely loved their carbonara pasta and would love to see it on the menu all year round!',
+      rating: 4.5,
+      reviewCount: 128
+    },
+    menuAnalysis: {
+      title: 'Menu Analysis',
+      subtitle: 'Showing top 3 menu items with strong product matches (85%+)',
+      topItems: [
+        {
+          id: 'carbonara',
+          name: 'Carbonara Pasta',
+          price: '$34.14',
+          productMatches: [
+            {
+              name: 'Barilla Pasta Penne Rigate 500g, 6 Extra Large Free Range Eggs 350g, Pork Belly Porchetta 1KG'
+            }
+          ],
+          pitchAngle: 'This carbonara is a customer favourite — keep it consistent by stocking premium ingredients like Barilla pasta and free-range eggs. Highlight the quality on the menu to drive repeat orders and justify premium pricing.',
+          matches: [
+            {
+              id: 'barilla-pasta',
+              name: 'Barilla Pasta Penne Rigate...',
+              matchPercentage: 85,
+              defaultPrice: '$2.18',
+              retailPrice: '$2.40',
+              yourPrice: '$2.40',
+              avgMargin: '$0.22 / 9.2%'
+            },
+            {
+              id: 'free-range-eggs',
+              name: '6XL Free Range Eggs 600...',
+              matchPercentage: 99,
+              defaultPrice: '$2.90',
+              retailPrice: '$3.50',
+              yourPrice: '$3.19',
+              avgMargin: '$0.29 / 9.1%'
+            },
+            {
+              id: 'pork-belly',
+              name: 'Pork Belly Porchetta 1KG',
+              matchPercentage: 90,
+              defaultPrice: '$18.00',
+              retailPrice: '$22.00',
+              yourPrice: '$19.80',
+              avgMargin: '$1.80 / 10%'
+            }
+          ],
+          basketTotal: {
+            salePrice: '$25.39',
+            profit: '$2.31',
+            avgMargin: '10.0%'
+          }
+        }
+      ]
+    },
     interestedSkus: [
       {
         id: 'sku1',

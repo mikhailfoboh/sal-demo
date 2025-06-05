@@ -143,7 +143,7 @@ export function LeadCard({
         <TouchableOpacity style={leadStyles.ctaButton}>
           <Text style={leadStyles.ctaButtonText}>{nextAction}</Text>
         </TouchableOpacity>
-        <TouchableOpacity style={leadStyles.secondaryButton}>
+        <TouchableOpacity style={leadStyles.secondaryButton} onPress={onPress}>
           <Text style={leadStyles.secondaryButtonText}>View Details</Text>
         </TouchableOpacity>
       </View>
