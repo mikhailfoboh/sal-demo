@@ -4,6 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '@/hooks/useTheme';
 import { Header } from '@/components/ui/Header';
 import { Card } from '@/components/ui/Card';
+import { ContactInfo } from '@/components/shared/ContactInfo';
 import { useLeadById } from '@/hooks/useLeads';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Star, MapPin, Clock, ChevronDown } from 'lucide-react-native';
@@ -26,6 +27,14 @@ export default function LeadDetailScreen() {
       </SafeAreaView>
     );
   }
+
+  const handleCall = () => {
+    Linking.openURL(`tel:${lead.contact.phone}`);
+  };
+
+  const handleEmail = () => {
+    Linking.openURL(`mailto:${lead.contact.email}`);
+  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -111,7 +120,7 @@ export default function LeadDetailScreen() {
                           </View>
                           <TouchableOpacity style={styles.expandButton}>
                             <Text style={styles.matchName}>{match.name}</Text>
-                            <ChevronDown size={16} color={colors.textSecondary} />
+                            <ChevronDown size={16} color="#6B7280" />
                           </TouchableOpacity>
                         </View>
                         
@@ -159,6 +168,16 @@ export default function LeadDetailScreen() {
               ))}
             </View>
           )}
+
+          {/* Contact Info - Keep this section */}
+          <ContactInfo
+            contact={{
+              name: lead.contact.name,
+              title: lead.contact.title,
+              phone: lead.contact.phone,
+              email: lead.contact.email
+            }}
+          />
         </View>
       </ScrollView>
     </SafeAreaView>
