@@ -14,6 +14,7 @@ interface AppContextType {
   plans: Plan[];
   notes: Note[];
   setNotes: (notes: Note[]) => void;
+  addLead: (lead: Lead) => void;
   priorities: any[];
   // Add state update functions as needed
 }
@@ -25,6 +26,10 @@ export function AppProvider({ children }: { children: ReactNode }) {
   const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
   const [plans, setPlans] = useState<Plan[]>(mockPlans);
   const [notes, setNotes] = useState<Note[]>(mockNotes);
+  
+  const addLead = (lead: Lead) => {
+    setLeads(prevLeads => [lead, ...prevLeads]);
+  };
   
   // Simulated "priority" customers (at-risk)
   const priorities = customers
@@ -44,6 +49,7 @@ export function AppProvider({ children }: { children: ReactNode }) {
         plans,
         notes,
         setNotes,
+        addLead,
         priorities,
         // Add state update functions as needed
       }}

@@ -40,6 +40,15 @@ export interface Lead {
         retailPrice: string;
         yourPrice: string;
         avgMargin: string;
+        alternatives?: {
+          id: string;
+          name: string;
+          matchPercentage: number;
+          defaultPrice: string;
+          retailPrice: string;
+          yourPrice: string;
+          avgMargin: string;
+        }[];
       }[];
       basketTotal: {
         salePrice: string;

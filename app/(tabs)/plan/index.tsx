@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity } from 'react-native';
+import { View, Text, TouchableOpacity, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -33,73 +33,79 @@ export default function PlanScreen() {
 
   return (
     <SafeAreaView style={planStyles.screenContainer} edges={['top']}>
-      <View style={planStyles.header}>
-        <View style={planStyles.profileSection}>
-          <View style={planStyles.avatar}>
-            <Text style={planStyles.avatarText}>MS</Text>
+      <ScrollView 
+        style={{ flex: 1 }}
+        contentContainerStyle={{ flexGrow: 1 }}
+        showsVerticalScrollIndicator={false}
+      >
+        <View style={planStyles.header}>
+          <View style={planStyles.profileSection}>
+            <View style={planStyles.avatar}>
+              <Text style={planStyles.avatarText}>MS</Text>
+            </View>
+            <View style={planStyles.userInfo}>
+              <Text style={planStyles.userName}>Mark Smith</Text>
+              <Text style={planStyles.userTitle}>Sales Rep at TwoZipz Inc.</Text>
+            </View>
           </View>
-          <View style={planStyles.userInfo}>
-            <Text style={planStyles.userName}>Mark Smith</Text>
-            <Text style={planStyles.userTitle}>Sales Rep at TwoZipz Inc.</Text>
-          </View>
-        </View>
 
-        <View style={planStyles.statsContainer}>
-          <View style={[planStyles.statCard, planStyles.pendingCard]}>
-            <Text style={[planStyles.statValue, planStyles.statLabelOrange]}>{pendingTasks}</Text>
-            <Text style={[planStyles.statLabel, planStyles.statLabelOrange]}>Pending</Text>
-            <View style={[planStyles.statIconContainer, planStyles.pendingIconContainer]}>
-              <ClockCounterClockwise size={20} color="#FFFFFF" />
+          <View style={planStyles.statsContainer}>
+            <View style={[planStyles.statCard, planStyles.pendingCard]}>
+              <Text style={[planStyles.statValue, planStyles.statLabelOrange]}>{pendingTasks}</Text>
+              <Text style={[planStyles.statLabel, planStyles.statLabelOrange]}>Pending</Text>
+              <View style={[planStyles.statIconContainer, planStyles.pendingIconContainer]}>
+                <ClockCounterClockwise size={20} color="#FFFFFF" />
+              </View>
+            </View>
+            <View style={[planStyles.statCard, planStyles.completedCard]}>
+              <Text style={[planStyles.statValue, planStyles.statLabelGreen]}>{completedTasks}</Text>
+              <Text style={[planStyles.statLabel, planStyles.statLabelGreen]}>Completed</Text>
+              <View style={[planStyles.statIconContainer, planStyles.completedIconContainer]}>
+                <CheckCircle size={20} color="#FFFFFF" />
+              </View>
+            </View>
+            <View style={[planStyles.statCard, planStyles.weekCard]}>
+              <Text style={[planStyles.statValue, planStyles.statLabelGray]}>{weekTasks}</Text>
+              <Text style={[planStyles.statLabel, planStyles.statLabelGray]}>This Week</Text>
+              <View style={[planStyles.statIconContainer, planStyles.weekIconContainer]}>
+                <CalendarPlus size={20} color="#FFFFFF" />
+              </View>
             </View>
           </View>
-          <View style={[planStyles.statCard, planStyles.completedCard]}>
-            <Text style={[planStyles.statValue, planStyles.statLabelGreen]}>{completedTasks}</Text>
-            <Text style={[planStyles.statLabel, planStyles.statLabelGreen]}>Completed</Text>
-            <View style={[planStyles.statIconContainer, planStyles.completedIconContainer]}>
-              <CheckCircle size={20} color="#FFFFFF" />
-            </View>
-          </View>
-          <View style={[planStyles.statCard, planStyles.weekCard]}>
-            <Text style={[planStyles.statValue, planStyles.statLabelGray]}>{weekTasks}</Text>
-            <Text style={[planStyles.statLabel, planStyles.statLabelGray]}>This Week</Text>
-            <View style={[planStyles.statIconContainer, planStyles.weekIconContainer]}>
-              <CalendarPlus size={20} color="#FFFFFF" />
-            </View>
-          </View>
-        </View>
 
-        {hasPriority && (
-          <View style={{ marginTop: 20 }}>
-            <PriorityAlert 
-              priority={priorities[0]} 
-              onPress={() => router.push(`../../customers/${priorities[0].customerId}`)}
-            />
-          </View>
+          {hasPriority && (
+            <View style={{ marginTop: 20 }}>
+              <PriorityAlert 
+                priority={priorities[0]} 
+                onPress={() => router.push(`../../customers/${priorities[0].customerId}`)}
+              />
+            </View>
+          )}
+        </View>
+        
+        <WeekSelector 
+          selectedDate={selectedDate}
+          onSelectDate={setSelectedDate}
+        />
+        
+        {selectedDayPlan ? (
+          <DailyPlanView 
+            plan={selectedDayPlan}
+            onVisitPress={(id) => router.push(`../../customers/${id}`)}
+            onTaskPress={(id) => console.log('Task pressed', id)}
+            onToggleComplete={(itemId, type) => {
+              // Handle completion toggle
+              console.log('Toggle complete:', itemId, type);
+            }}
+          />
+        ) : (
+          <EmptyState
+            icon="clipboard"
+            title="No plans for this day"
+            message="Tap the + button to add a visit or task to your schedule."
+          />
         )}
-      </View>
-      
-      <WeekSelector 
-        selectedDate={selectedDate}
-        onSelectDate={setSelectedDate}
-      />
-      
-      {selectedDayPlan ? (
-        <DailyPlanView 
-          plan={selectedDayPlan}
-          onVisitPress={(id) => router.push(`../../customers/${id}`)}
-          onTaskPress={(id) => console.log('Task pressed', id)}
-          onToggleComplete={(itemId, type) => {
-            // Handle completion toggle
-            console.log('Toggle complete:', itemId, type);
-          }}
-        />
-      ) : (
-        <EmptyState
-          icon="clipboard"
-          title="No plans for this day"
-          message="Tap the + button to add a visit or task to your schedule."
-        />
-      )}
+      </ScrollView>
     </SafeAreaView>
   );
 } 

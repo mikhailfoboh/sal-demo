@@ -44,7 +44,36 @@ export const mockLeads: Lead[] = [
               defaultPrice: '$2.18',
               retailPrice: '$2.40',
               yourPrice: '$2.40',
-              avgMargin: '$0.22 / 9.2%'
+              avgMargin: '$0.22 / 9.2%',
+              alternatives: [
+                {
+                  id: 'san-remo-pasta',
+                  name: 'San Remo Pasta Penne 500g',
+                  matchPercentage: 82,
+                  defaultPrice: '$1.95',
+                  retailPrice: '$2.20',
+                  yourPrice: '$2.20',
+                  avgMargin: '$0.25 / 11.4%'
+                },
+                {
+                  id: 'de-cecco-pasta',
+                  name: 'De Cecco Penne Rigate 500g',
+                  matchPercentage: 88,
+                  defaultPrice: '$2.45',
+                  retailPrice: '$2.75',
+                  yourPrice: '$2.65',
+                  avgMargin: '$0.20 / 7.5%'
+                },
+                {
+                  id: 'garofalo-pasta',
+                  name: 'Garofalo Organic Penne 500g',
+                  matchPercentage: 90,
+                  defaultPrice: '$3.20',
+                  retailPrice: '$3.60',
+                  yourPrice: '$3.45',
+                  avgMargin: '$0.25 / 7.2%'
+                }
+              ]
             },
             {
               id: 'free-range-eggs',
@@ -53,7 +82,36 @@ export const mockLeads: Lead[] = [
               defaultPrice: '$2.90',
               retailPrice: '$3.50',
               yourPrice: '$3.19',
-              avgMargin: '$0.29 / 9.1%'
+              avgMargin: '$0.29 / 9.1%',
+              alternatives: [
+                {
+                  id: 'organic-eggs',
+                  name: 'Organic Free Range Eggs 600g',
+                  matchPercentage: 95,
+                  defaultPrice: '$3.40',
+                  retailPrice: '$4.20',
+                  yourPrice: '$3.85',
+                  avgMargin: '$0.45 / 11.7%'
+                },
+                {
+                  id: 'pasture-eggs',
+                  name: 'Pasture Raised Eggs 600g',
+                  matchPercentage: 97,
+                  defaultPrice: '$4.10',
+                  retailPrice: '$4.80',
+                  yourPrice: '$4.45',
+                  avgMargin: '$0.35 / 7.9%'
+                },
+                {
+                  id: 'farm-eggs',
+                  name: 'Farm Fresh Large Eggs 600g',
+                  matchPercentage: 92,
+                  defaultPrice: '$2.60',
+                  retailPrice: '$3.20',
+                  yourPrice: '$2.95',
+                  avgMargin: '$0.35 / 11.9%'
+                }
+              ]
             },
             {
               id: 'pork-belly',
@@ -62,7 +120,36 @@ export const mockLeads: Lead[] = [
               defaultPrice: '$18.00',
               retailPrice: '$22.00',
               yourPrice: '$19.80',
-              avgMargin: '$1.80 / 10%'
+              avgMargin: '$1.80 / 10%',
+              alternatives: [
+                {
+                  id: 'bacon-rashers',
+                  name: 'Premium Bacon Rashers 1KG',
+                  matchPercentage: 85,
+                  defaultPrice: '$16.50',
+                  retailPrice: '$20.00',
+                  yourPrice: '$18.20',
+                  avgMargin: '$1.70 / 9.3%'
+                },
+                {
+                  id: 'pancetta',
+                  name: 'Italian Pancetta Cubes 1KG',
+                  matchPercentage: 92,
+                  defaultPrice: '$21.00',
+                  retailPrice: '$25.50',
+                  yourPrice: '$23.10',
+                  avgMargin: '$2.10 / 9.1%'
+                },
+                {
+                  id: 'guanciale',
+                  name: 'Authentic Guanciale 500g',
+                  matchPercentage: 98,
+                  defaultPrice: '$15.50',
+                  retailPrice: '$18.50',
+                  yourPrice: '$16.75',
+                  avgMargin: '$1.25 / 7.5%'
+                }
+              ]
             }
           ],
           basketTotal: {
@@ -127,6 +214,72 @@ export const mockLeads: Lead[] = [
     stage: 'Sampling',
     createdAt: '2 months ago',
     lastInteraction: '3 days ago',
+    isNew: false,
+    location: 'Market Street',
+    category: 'Bistro',
+    bestTime: '5:00-7:00',
+    rating: 4.3,
+    reviewCount: 89,
+    recentReview: {
+      date: '5 days ago',
+      text: 'Great atmosphere and excellent craft beer selection! The fish tacos were outstanding.',
+      rating: 4.3,
+      reviewCount: 89
+    },
+    menuAnalysis: {
+      title: 'Menu Analysis',
+      subtitle: 'Showing top 3 menu items with strong product matches (80%+)',
+      topItems: [
+        {
+          id: 'fish-tacos',
+          name: 'Beer Battered Fish Tacos',
+          price: '$18.50',
+          productMatches: [
+            {
+              name: 'Fresh Barramundi Fillets 1KG, Premium Beer Batter Mix 500g, Corn Tortillas 12pk'
+            }
+          ],
+          pitchAngle: 'Your fish tacos are a customer favorite. Using premium barramundi and our craft beer batter mix will elevate the dish while maintaining consistency and reducing prep time.',
+          matches: [
+            {
+              id: 'barramundi-fillets',
+              name: 'Fresh Barramundi Fillets 1KG',
+              matchPercentage: 88,
+              defaultPrice: '$24.50',
+              retailPrice: '$28.00',
+              yourPrice: '$26.20',
+              avgMargin: '$1.70 / 6.9%',
+              alternatives: [
+                {
+                  id: 'snapper-fillets',
+                  name: 'Red Snapper Fillets 1KG',
+                  matchPercentage: 85,
+                  defaultPrice: '$22.00',
+                  retailPrice: '$26.50',
+                  yourPrice: '$24.75',
+                  avgMargin: '$2.75 / 12.5%'
+                }
+              ]
+            },
+            {
+              id: 'beer-batter-mix',
+              name: 'Premium Beer Batter Mix 500g',
+              matchPercentage: 92,
+              defaultPrice: '$8.50',
+              retailPrice: '$10.20',
+              yourPrice: '$9.35',
+              avgMargin: '$0.85 / 10.0%',
+              alternatives: []
+            }
+          ],
+          basketTotal: {
+            salePrice: '$35.55',
+            profit: '$2.55',
+            avgMargin: '7.7%'
+          }
+        }
+      ]
+    },
     interestedSkus: [
       {
         id: 'sku3',
@@ -186,6 +339,72 @@ export const mockLeads: Lead[] = [
     stage: 'New',
     createdAt: '1 week ago',
     lastInteraction: '1 week ago',
+    isNew: true,
+    location: 'Howard Street',
+    category: 'Mediterranean',
+    bestTime: '2:00-4:00',
+    rating: 4.6,
+    reviewCount: 156,
+    recentReview: {
+      date: '3 days ago',
+      text: 'Authentic Mediterranean flavors! The lamb souvlaki and fresh tzatziki were incredible.',
+      rating: 4.6,
+      reviewCount: 156
+    },
+    menuAnalysis: {
+      title: 'Menu Analysis',
+      subtitle: 'Showing top 3 menu items with strong product matches (85%+)',
+      topItems: [
+        {
+          id: 'lamb-souvlaki',
+          name: 'Traditional Lamb Souvlaki',
+          price: '$26.00',
+          productMatches: [
+            {
+              name: 'Premium Lamb Leg 2KG, Extra Virgin Olive Oil 500ml, Greek Oregano 100g'
+            }
+          ],
+          pitchAngle: 'Your souvlaki represents authentic Mediterranean cuisine. Premium lamb and imported Greek oregano will enhance the traditional flavors your customers expect.',
+          matches: [
+            {
+              id: 'lamb-leg',
+              name: 'Premium Lamb Leg 2KG',
+              matchPercentage: 90,
+              defaultPrice: '$48.00',
+              retailPrice: '$55.00',
+              yourPrice: '$51.50',
+              avgMargin: '$3.50 / 7.3%',
+              alternatives: [
+                {
+                  id: 'lamb-shoulder',
+                  name: 'Lamb Shoulder Boneless 2KG',
+                  matchPercentage: 85,
+                  defaultPrice: '$42.00',
+                  retailPrice: '$48.50',
+                  yourPrice: '$45.25',
+                  avgMargin: '$3.25 / 7.7%'
+                }
+              ]
+            },
+            {
+              id: 'olive-oil',
+              name: 'Extra Virgin Olive Oil 500ml',
+              matchPercentage: 95,
+              defaultPrice: '$12.50',
+              retailPrice: '$15.00',
+              yourPrice: '$13.75',
+              avgMargin: '$1.25 / 10.0%',
+              alternatives: []
+            }
+          ],
+          basketTotal: {
+            salePrice: '$65.25',
+            profit: '$4.75',
+            avgMargin: '7.8%'
+          }
+        }
+      ]
+    },
     interestedSkus: [],
     suggestedActions: [
       {
@@ -223,6 +442,72 @@ export const mockLeads: Lead[] = [
     stage: 'Won',
     createdAt: '3 months ago',
     lastInteraction: '2 days ago',
+    isNew: false,
+    location: 'Pine Street',
+    category: 'Contemporary',
+    bestTime: '3:00-5:00',
+    rating: 4.8,
+    reviewCount: 234,
+    recentReview: {
+      date: '1 day ago',
+      text: 'Exceptional dining experience! The seared salmon was perfectly cooked and the wine pairing was spot on.',
+      rating: 4.8,
+      reviewCount: 234
+    },
+    menuAnalysis: {
+      title: 'Menu Analysis',
+      subtitle: 'Showing top 3 menu items with strong product matches (88%+)',
+      topItems: [
+        {
+          id: 'seared-salmon',
+          name: 'Pan-Seared Atlantic Salmon',
+          price: '$32.00',
+          productMatches: [
+            {
+              name: 'Atlantic Salmon Fillets 1.5KG, Organic Baby Spinach 200g, White Wine Reduction Base 250ml'
+            }
+          ],
+          pitchAngle: 'Your signature salmon dish deserves premium ingredients. Our Atlantic salmon fillets are sustainably sourced and consistently sized for perfect plating every time.',
+          matches: [
+            {
+              id: 'salmon-fillets',
+              name: 'Atlantic Salmon Fillets 1.5KG',
+              matchPercentage: 93,
+              defaultPrice: '$35.00',
+              retailPrice: '$42.00',
+              yourPrice: '$38.50',
+              avgMargin: '$3.50 / 10.0%',
+              alternatives: [
+                {
+                  id: 'king-salmon',
+                  name: 'King Salmon Fillets 1.5KG',
+                  matchPercentage: 88,
+                  defaultPrice: '$48.00',
+                  retailPrice: '$56.00',
+                  yourPrice: '$52.00',
+                  avgMargin: '$4.00 / 8.3%'
+                }
+              ]
+            },
+            {
+              id: 'baby-spinach',
+              name: 'Organic Baby Spinach 200g',
+              matchPercentage: 90,
+              defaultPrice: '$4.50',
+              retailPrice: '$6.00',
+              yourPrice: '$5.25',
+              avgMargin: '$0.75 / 16.7%',
+              alternatives: []
+            }
+          ],
+          basketTotal: {
+            salePrice: '$43.75',
+            profit: '$4.25',
+            avgMargin: '10.7%'
+          }
+        }
+      ]
+    },
     interestedSkus: [
       {
         id: 'sku6',

@@ -32,4 +32,190 @@
 ## When to Ask
 - If the requested change might have unintended side effects
 - If multiple approaches exist for implementing the request
-- If preserving exact current behavior requires clarification 
+- If preserving exact current behavior requires clarification
+
+---
+
+# Product Requirements Document (PRD) Reference Rules
+
+## CRITICAL: Always Reference PRD Folder for Feature Development
+
+### 1. **PRD as Single Source of Truth**
+- ALL feature development must reference the PRD folder: `/PRD/`
+- Before implementing any feature, check for existing PRD documentation
+- If no PRD exists for a feature request, create one or request it be created
+- Never make assumptions about requirements - always verify against PRD
+
+### 2. **PRD Consultation Pattern (MANDATORY)**
+When working on features:
+
+```
+1. Check /PRD/ folder for relevant documentation
+2. Read the full PRD before starting implementation
+3. Reference user stories and acceptance criteria
+4. Verify technical requirements and dependencies
+5. Follow implementation phases as outlined
+6. Use success metrics for validation
+```
+
+### 3. **Feature Implementation Requirements**
+For every feature development:
+- ✅ Reference specific PRD sections in code comments
+- ✅ Implement according to acceptance criteria
+- ✅ Follow technical requirements exactly
+- ✅ Consider cross-platform compatibility as specified
+- ✅ Track success metrics if applicable
+
+### 4. **PRD Update Requirements**
+When requirements change during development:
+- Update the PRD FIRST before implementing changes
+- Document any deviations from original requirements
+- Get stakeholder approval for significant changes
+- Maintain version history in PRD
+
+### 5. **Current PRD Files to Reference**
+- `PRD/DISCOVERY_SEARCH_PRD.md` - Discovery search functionality
+- `PRD/CREATE_PITCH_PRD.md` - Create Pitch & Lead Conversion feature
+- `PRD/README.md` - PRD guidelines and standards
+- [Check PRD folder for additional documents]
+
+### 6. **Development Workflow Integration**
+```typescript
+// EXAMPLE: Always reference PRD in feature implementation
+// Reference: PRD/DISCOVERY_SEARCH_PRD.md - Story 1.1: Location Search
+// Acceptance Criteria: Search input accepts city names, addresses, and ZIP codes
+
+const LocationSearch = () => {
+  // Implementation following PRD requirements...
+};
+```
+
+### 7. **Communication Requirements**
+- When discussing features, reference specific PRD sections
+- Use PRD terminology consistently
+- Link to PRD documents in pull requests and issues
+- Escalate requirement conflicts to PRD owners
+
+### 8. **Quality Assurance Integration**
+- Use PRD acceptance criteria for test case creation
+- Validate implementation against Definition of Done
+- Verify success metrics are trackable
+- Ensure all PRD requirements are met before feature completion
+
+---
+
+# Platform Compatibility Rules
+
+## CRITICAL: Always Consider Cross-Platform Compatibility
+
+### 1. **Native-Only Packages Detection**
+Before using any package, check if it supports web builds:
+- ❌ `react-native-maps` - Native only
+- ❌ `react-native-camera` - Native only  
+- ❌ `@react-native-community/geolocation` - Native only
+- ❌ `react-native-bluetooth-*` - Native only
+- ❌ `react-native-nfc-*` - Native only
+- ❌ Most hardware-specific packages
+
+### 2. **Platform Detection Pattern (MANDATORY)**
+When using native-only packages, ALWAYS implement this pattern:
+
+```typescript
+import { Platform } from 'react-native';
+
+// Conditional imports
+let NativeComponent: any;
+if (Platform.OS !== 'web') {
+  NativeComponent = require('native-package').default;
+}
+
+// Component with fallback
+export const MyComponent = () => {
+  if (Platform.OS === 'web') {
+    return <WebFallbackComponent />;
+  }
+  
+  return <NativeComponent />;
+};
+```
+
+### 3. **Web Fallback Requirements**
+For every native-only feature, provide:
+- Clear messaging about mobile-only functionality
+- Alternative content or navigation
+- Graceful degradation of user experience
+- No broken imports or runtime errors
+
+### 4. **Safe Cross-Platform Packages**
+These are generally safe for all platforms:
+- ✅ `expo-*` packages (most are cross-platform)
+- ✅ `@expo/vector-icons`
+- ✅ `lucide-react-native`
+- ✅ `date-fns`
+- ✅ Pure JavaScript libraries
+
+### 5. **Testing Requirements**
+Before implementing any native features:
+1. Check if the package supports web in its documentation
+2. Test builds for both native and web platforms
+3. Implement Platform.OS checks for native-only code
+4. Provide meaningful fallbacks for unsupported platforms
+
+### 6. **Bundle Error Prevention**
+Common errors to avoid:
+- ❌ Direct imports of native-only packages without Platform checks
+- ❌ Using native APIs (Camera, GPS, Bluetooth) without fallbacks
+- ❌ Hardcoded platform assumptions
+- ❌ Missing conditional rendering for platform-specific UI
+
+### 7. **Error Handling Pattern**
+```typescript
+// WRONG - Will break web builds
+import NativePackage from 'react-native-native-only';
+
+// CORRECT - Platform-safe
+import { Platform } from 'react-native';
+
+let NativePackage: any;
+if (Platform.OS !== 'web') {
+  try {
+    NativePackage = require('react-native-native-only');
+  } catch (error) {
+    console.warn('Native package not available:', error);
+  }
+}
+
+const MyComponent = () => {
+  if (Platform.OS === 'web' || !NativePackage) {
+    return <div>Feature not available on web</div>;
+  }
+  
+  return <NativePackage.Component />;
+};
+```
+
+### 8. **Documentation Requirements**
+When adding platform-specific features:
+- Document which platforms are supported
+- Explain fallback behavior for unsupported platforms
+- Note any setup requirements for native platforms
+
+---
+
+# Package Installation Guidelines
+
+## Before Installing Any Package:
+1. **Check platform support** in package documentation
+2. **Search for web compatibility** issues on GitHub
+3. **Look for expo-* alternatives** first
+4. **Plan fallback strategy** for unsupported platforms
+5. **Test on all target platforms** before committing
+
+## Package Evaluation Checklist:
+- [ ] Does it support React Native Web?
+- [ ] Are there any native dependencies?
+- [ ] Is there an Expo-managed alternative?
+- [ ] What's the fallback for unsupported platforms?
+- [ ] Will it break web builds?
+
+This prevents bundling errors like "Unable to resolve Platform" by ensuring all platform-specific code is properly isolated and handled. 

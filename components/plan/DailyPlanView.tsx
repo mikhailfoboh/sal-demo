@@ -73,10 +73,8 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
   };
 
   return (
-    <ScrollView 
+    <View 
       style={planStyles.dailyPlanContainer}
-      contentContainerStyle={planStyles.dailyPlanContent}
-      showsVerticalScrollIndicator={false}
     >
       {/* Dynamic Activity Count Header */}
       <View style={planStyles.dayHeaderContainer}>
@@ -213,6 +211,6 @@ export function DailyPlanView({ plan, onVisitPress, onTaskPress, onToggleComplet
           </TouchableOpacity>
         );
       })}
-    </ScrollView>
+    </View>
   );
 }

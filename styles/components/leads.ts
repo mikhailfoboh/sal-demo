@@ -44,7 +44,6 @@ export const leadStyles = StyleSheet.create({
     justifyContent: 'space-between',
     marginHorizontal: 24,
     marginBottom: spacing.md,
-    marginTop: -30,
     backgroundColor: '#F0F7F4',
     borderRadius: 16,
     borderWidth: 1,
@@ -263,5 +262,116 @@ export const leadStyles = StyleSheet.create({
     ...typography.body1,
     color: colors.textPrimary,
     ...layout.shadow.sm,
+  },
+
+  // View Toggle
+  viewToggleContainer: {
+    flexDirection: 'row',
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    backgroundColor: '#F0F7F4',
+    borderRadius: 12,
+    padding: 4,
+    borderWidth: 1,
+    borderColor: '#C6E1D5',
+  },
+  viewToggleButton: {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: spacing.md,
+    borderRadius: 8,
+    gap: 6,
+  },
+  viewToggleButtonActive: {
+    backgroundColor: '#087057',
+  },
+  viewToggleText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#6B7280',
+  },
+  viewToggleTextActive: {
+    color: '#FFFFFF',
+  },
+
+  // Radius Controls
+  radiusContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.md,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    backgroundColor: '#F9FAFB',
+    borderRadius: 8,
+    gap: 8,
+  },
+  radiusLabel: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 14,
+    color: '#374151',
+  },
+  radiusOptions: {
+    flexDirection: 'row',
+    gap: 6,
+    flex: 1,
+    justifyContent: 'flex-end',
+  },
+  radiusOption: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 6,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  radiusOptionActive: {
+    backgroundColor: '#087057',
+    borderColor: '#087057',
+  },
+  radiusOptionText: {
+    fontFamily: 'Inter-Medium',
+    fontSize: 12,
+    color: '#6B7280',
+  },
+  radiusOptionTextActive: {
+    color: '#FFFFFF',
+  },
+
+  // Map Container
+  mapContainer: {
+    flex: 1,
+    marginHorizontal: spacing.lg,
+    marginBottom: spacing.lg,
+    borderRadius: 12,
+    overflow: 'hidden',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+
+  // Empty State
+  emptyState: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: spacing.xl,
+    paddingHorizontal: spacing.lg,
+  },
+  emptyStateText: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: colors.textPrimary,
+    textAlign: 'center',
+    marginBottom: 8,
+  },
+  emptyStateSubtext: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: colors.textSecondary,
+    textAlign: 'center',
+    lineHeight: 20,
   },
 }); 
