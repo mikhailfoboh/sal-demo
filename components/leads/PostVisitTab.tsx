@@ -88,6 +88,9 @@ export function PostVisitTab({
       item.id === itemId ? { ...item, checked: !item.checked } : item
     );
     setChecklistItems(updatedItems);
+    
+    // Save to database
+    console.log('💾 Saving checklist update to database');
     onUpdateData({ checklist: updatedItems });
   };
 
@@ -103,7 +106,11 @@ export function PostVisitTab({
       };
       const updatedItems = [...checklistItems, newItem];
       setChecklistItems(updatedItems);
+      
+      // Save to database
+      console.log('💾 Saving new checklist item to database');
       onUpdateData({ checklist: updatedItems });
+      
       setCustomChecklistText('');
       setShowCustomChecklistInput(false);
     }
@@ -113,6 +120,9 @@ export function PostVisitTab({
   const handleDeleteChecklistItem = (itemId: string) => {
     const updatedItems = checklistItems.filter(item => item.id !== itemId);
     setChecklistItems(updatedItems);
+    
+    // Save to database
+    console.log('💾 Saving checklist deletion to database');
     onUpdateData({ checklist: updatedItems });
   };
 
@@ -125,7 +135,11 @@ export function PostVisitTab({
     };
     const updatedNotes = [...notes, newNote];
     setNotes(updatedNotes);
+    
+    // Save to database
+    console.log('💾 Saving new note to database');
     onUpdateData({ notes: updatedNotes });
+    
     setCustomNoteText('');
     setShowCustomNoteInput(false);
   };
@@ -134,6 +148,9 @@ export function PostVisitTab({
   const handleDeleteNote = (noteId: string) => {
     const updatedNotes = notes.filter(note => note.id !== noteId);
     setNotes(updatedNotes);
+    
+    // Save to database
+    console.log('💾 Saving note deletion to database');
     onUpdateData({ notes: updatedNotes });
   };
 
@@ -148,7 +165,11 @@ export function PostVisitTab({
     };
     const updatedActions = [...actions, newAction];
     setActions(updatedActions);
+    
+    // Save to database
+    console.log('💾 Saving new action to database');
     onUpdateData({ actions: updatedActions });
+    
     setCustomActionText('');
     setShowCustomActionInput(false);
   };
@@ -165,6 +186,9 @@ export function PostVisitTab({
         : action
     );
     setActions(updatedActions);
+    
+    // Save to database
+    console.log('💾 Saving action completion to database');
     onUpdateData({ actions: updatedActions });
   };
 
@@ -172,6 +196,9 @@ export function PostVisitTab({
   const handleDeleteAction = (actionId: string) => {
     const updatedActions = actions.filter(action => action.id !== actionId);
     setActions(updatedActions);
+    
+    // Save to database
+    console.log('💾 Saving action deletion to database');
     onUpdateData({ actions: updatedActions });
   };
 
@@ -254,6 +281,8 @@ export function PostVisitTab({
         {/* Sample notes for guidance */}
         {notes.length === 0 && (
           <View style={styles.sampleNotes}>
+            <Text style={styles.suggestedTitle}>Suggested Discussion Notes</Text>
+            <Text style={styles.suggestedSubtitle}>Tap to add any that apply to your visit:</Text>
             {SAMPLE_DISCUSSION_NOTES.map((note, index) => (
               <TouchableOpacity
                 key={index}
@@ -336,9 +365,18 @@ export function PostVisitTab({
         <Text style={styles.sectionSubtitle}>What do you need to do next?</Text>
 
         {/* Recommended actions */}
-        {actions.filter(action => !action.is_custom).length === 0 && (
-          <View style={styles.recommendedActions}>
-            {RECOMMENDED_NEXT_ACTIONS.map((action, index) => (
+        <View style={styles.recommendedActions}>
+          <Text style={styles.suggestedTitle}>Recommended Next Actions</Text>
+          <Text style={styles.suggestedSubtitle}>Tap to add any that apply:</Text>
+          {RECOMMENDED_NEXT_ACTIONS.map((action, index) => {
+            // Check if this action is already added
+            const isAlreadyAdded = actions.some(existingAction => 
+              existingAction.title === action.title
+            );
+            
+            if (isAlreadyAdded) return null;
+            
+            return (
               <TouchableOpacity
                 key={index}
                 style={styles.recommendedAction}
@@ -350,9 +388,9 @@ export function PostVisitTab({
                 <Text style={styles.recommendedActionText}>{action.title}</Text>
                 <Plus size={14} color={colors.primary} />
               </TouchableOpacity>
-            ))}
-          </View>
-        )}
+            );
+          })}
+        </View>
 
         {/* Existing actions */}
         {actions.map((action) => (
@@ -373,14 +411,12 @@ export function PostVisitTab({
                 </Text>
               )}
             </View>
-            {action.is_custom && (
-              <TouchableOpacity
-                onPress={() => handleDeleteAction(action.id)}
-                style={styles.deleteButton}
-              >
-                <X size={16} color={colors.error} />
-              </TouchableOpacity>
-            )}
+            <TouchableOpacity
+              onPress={() => handleDeleteAction(action.id)}
+              style={styles.deleteButton}
+            >
+              <X size={16} color={colors.error} />
+            </TouchableOpacity>
           </View>
         ))}
 
@@ -629,5 +665,17 @@ const styles = StyleSheet.create({
     fontFamily: 'Inter-Regular',
     color: '#6B7280',
     marginTop: 2,
+  },
+  suggestedTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  suggestedSubtitle: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    marginBottom: 12,
   },
 }); 
