@@ -141,7 +141,11 @@ export default function LeadDetailScreen() {
   if (isLoading || !lead) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <Header title="Lead Details" showBackButton />
+        <Header 
+          title="Lead Details" 
+          showBackButton 
+          onBackPress={() => router.push('/(tabs)/leads')}
+        />
         <EmptyState
           icon="alert"
           title="Loading..."
@@ -196,14 +200,12 @@ export default function LeadDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      {/* Custom Header */}
-      <View style={styles.customHeader}>
-        <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-          <Text style={styles.backArrow}>←</Text>
-        </TouchableOpacity>
-        <Text style={styles.headerTitle}>{lead.name}</Text>
-        <View style={styles.headerSpacer} />
-      </View>
+      {/* Fixed Header with proper navigation */}
+      <Header 
+        title={lead.name} 
+        showBackButton 
+        onBackPress={() => router.push('/(tabs)/leads')}
+      />
       
       {/* Reference: PRD/POST_VISIT_PRD.md - Story 1.1: Tabbed Interface Implementation */}
       <View style={styles.tabContainer}>

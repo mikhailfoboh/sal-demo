@@ -22,10 +22,19 @@ export default function CustomerDetailScreen() {
   const { colors } = useTheme();
   const { customer, isLoading } = useCustomerById(id);
   
+  // Fixed navigation - go back to customers list
+  const handleBackPress = () => {
+    router.push('/(tabs)/customers');
+  };
+  
   if (isLoading || !customer) {
     return (
       <SafeAreaView style={styles.container} edges={['top']}>
-        <Header title="Customer Details" showBackButton />
+        <Header 
+          title="Customer Details" 
+          showBackButton 
+          onBackPress={handleBackPress}
+        />
         <EmptyState
           icon="alert"
           title="Loading..."
@@ -54,7 +63,11 @@ export default function CustomerDetailScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <Header title={customer.name} showBackButton />
+      <Header 
+        title={customer.name} 
+        showBackButton 
+        onBackPress={handleBackPress}
+      />
       
       <ScrollView style={styles.scrollView} showsVerticalScrollIndicator={false}>
         <View style={styles.content}>
