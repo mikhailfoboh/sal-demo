@@ -44,21 +44,54 @@ interface SimpleLead {
 }
 
 // Convert database lead to simple lead for display
-const convertToSimpleLead = (dbLead: DatabaseLead): SimpleLead => ({
-  id: dbLead.id,
-  businessName: dbLead.business_name,
-  location: dbLead.location,
-  category: dbLead.category,
-  rating: dbLead.rating,
-  reviewCount: dbLead.review_count,
-  status: dbLead.status,
-  nextAction: dbLead.next_action || 'Contact',
-  productMatch: dbLead.product_match,
-  upcomingEvent: dbLead.upcoming_event,
-  localBuzz: dbLead.local_buzz,
-  note: dbLead.note,
-  reminder: dbLead.reminder,
-});
+const convertToSimpleLead = (dbLead: DatabaseLead): SimpleLead => {
+  // Format next action to be user-friendly
+  const formatNextAction = (action: string | undefined): string => {
+    if (!action) return 'Contact';
+    
+    // Convert snake_case or camelCase to proper text
+    const formatted = action
+      .replace(/_/g, ' ')
+      .replace(/([A-Z])/g, ' $1')
+      .toLowerCase()
+      .split(' ')
+      .map(word => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ')
+      .trim();
+    
+    // Handle specific cases
+    switch (action.toLowerCase()) {
+      case 'request_sample':
+        return 'Request Sample';
+      case 'visit_venue':
+        return 'Visit Venue';
+      case 'follow_up':
+        return 'Follow Up';
+      case 'send_pitch':
+        return 'Send Pitch';
+      case 'schedule_meeting':
+        return 'Schedule Meeting';
+      default:
+        return formatted || 'Contact';
+    }
+  };
+
+  return {
+    id: dbLead.id,
+    businessName: dbLead.business_name,
+    location: dbLead.location,
+    category: dbLead.category,
+    rating: dbLead.rating,
+    reviewCount: dbLead.review_count,
+    status: dbLead.status,
+    nextAction: formatNextAction(dbLead.next_action),
+    productMatch: dbLead.product_match,
+    upcomingEvent: dbLead.upcoming_event,
+    localBuzz: dbLead.local_buzz,
+    note: dbLead.note,
+    reminder: dbLead.reminder,
+  };
+};
 
 export default function LeadsScreen() {
   const router = useRouter();
