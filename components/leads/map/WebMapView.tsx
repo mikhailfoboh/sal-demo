@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { View, StyleSheet, Text, TouchableOpacity, TextInput } from 'react-native';
 import { Loader } from '@googlemaps/js-api-loader';
 import { ChevronDown, Crosshair } from 'lucide-react-native';
+import Constants from 'expo-constants';
 
 interface Restaurant {
   id: string;
@@ -124,8 +125,14 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   useEffect(() => {
     const initializeMap = async () => {
       try {
+        const apiKey = Constants.expoConfig?.extra?.googleMapsApiKey || 
+                      Constants.manifest?.extra?.googleMapsApiKey ||
+                      'AIzaSyC1Xqy0Ib2LGHTQtgBdFURxclWSmZ_3pPQ';
+        
+        console.log('Google Maps API Key:', apiKey ? 'Found' : 'Not found');
+        
         const loader = new Loader({
-          apiKey: process.env.EXPO_PUBLIC_GOOGLE_PLACES_API_KEY || 'AIzaSyC1Xqy0Ib2LGHTQtgBdFURxclWSmZ_3pPQ',
+          apiKey: apiKey,
           version: 'weekly',
           libraries: ['places']
         });
@@ -153,7 +160,7 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
         }
       } catch (error) {
         console.error('Error loading Google Maps:', error);
-        setMapError('Failed to load Google Maps');
+        setMapError(`Failed to load Google Maps: ${error.message || 'Unknown error'}`);
         setIsLoadingMap(false);
       }
     };

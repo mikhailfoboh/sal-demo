@@ -61,7 +61,8 @@
       "router": {},
       "eas": {
         "projectId": "505bb264-6991-4dc2-ae61-c8d378137acb"
-      }
+      },
+      "googleMapsApiKey": "AIzaSyC1Xqy0Ib2LGHTQtgBdFURxclWSmZ_3pPQ"
     },
     "owner": "mikfoboh"
   }
