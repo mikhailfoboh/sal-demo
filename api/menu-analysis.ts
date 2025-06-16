@@ -43,10 +43,12 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log(`🔍 Server-side menu analysis for: ${restaurantInfo.name}`);
 
     // Get Perplexity API key from environment
-    const apiKey = process.env.EXPO_PUBLIC_PERPLEXITY_API_KEY || process.env.PERPLEXITY_API_KEY;
+    // For server-side API routes, use PERPLEXITY_API_KEY (without EXPO_PUBLIC prefix)
+    const apiKey = process.env.PERPLEXITY_API_KEY || process.env.EXPO_PUBLIC_PERPLEXITY_API_KEY;
     
     if (!apiKey) {
       console.warn('🔑 Perplexity API key not found in server environment');
+      console.warn('Available env vars:', Object.keys(process.env).filter(key => key.includes('PERPLEXITY')));
       return res.status(500).json({ error: 'Perplexity API not configured' });
     }
 
