@@ -362,6 +362,11 @@ export default function LeadsScreen() {
             onRadiusChange={setSelectedRadius}
             searchQuery={searchQuery}
             onSearchChange={setSearchQuery}
+            onAddToLeads={handleAddToLeads}
+            currentRestaurantIndex={currentRestaurantIndex}
+            totalRestaurants={nearbyRestaurants.length}
+            onPrevious={currentRestaurantIndex > 0 ? handlePreviousRestaurant : undefined}
+            onNext={currentRestaurantIndex < nearbyRestaurants.length - 1 ? handleNextRestaurant : undefined}
           />
         </View>
       ))}

@@ -41,6 +41,11 @@ interface WebMapViewProps {
   onRadiusChange?: (radius: number) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
+  onAddToLeads?: (restaurant: Restaurant) => Promise<void>;
+  currentRestaurantIndex?: number;
+  totalRestaurants?: number;
+  onPrevious?: () => void;
+  onNext?: () => void;
 }
 
 interface DropdownProps {
@@ -89,7 +94,12 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   existingLeads,
   onRadiusChange,
   searchQuery,
-  onSearchChange
+  onSearchChange,
+  onAddToLeads,
+  currentRestaurantIndex = 0,
+  totalRestaurants = 0,
+  onPrevious,
+  onNext
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -102,6 +112,9 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   const [mapError, setMapError] = useState<string | null>(null);
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [showConfirmation, setShowConfirmation] = useState(false);
+  const [showAlertModal, setShowAlertModal] = useState(false);
+  const [addedRestaurantName, setAddedRestaurantName] = useState('');
+  const [radiusCircle, setRadiusCircle] = useState<google.maps.Circle | null>(null);
 
   const RADIUS_OPTIONS = [
     { label: '1km', value: '1000' },
@@ -183,6 +196,7 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
         setMap(googleMap);
         setIsLoadingMap(false);
         searchNearbyRestaurants(location, googleMap);
+        addRadiusCircle(location, googleMap);
       }
     };
 
@@ -323,33 +337,19 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   };
 
   // Handle adding restaurant to leads
-  const handleAddToLeads = () => {
-    if (selectedRestaurant) {
-      // Convert restaurant to lead format
-      const newLead = {
-        id: `lead-${Date.now()}`,
-        businessName: selectedRestaurant.name,
-        location: selectedRestaurant.address,
-        category: selectedRestaurant.cuisineType,
-        rating: selectedRestaurant.rating,
-        reviewCount: selectedRestaurant.reviewCount,
-        status: 'new' as const,
-        nextAction: 'Contact',
-        productMatch: 'TBD',
-        upcomingEvent: '',
-        localBuzz: selectedRestaurant.isNewlyOpened ? 'Recently opened' : '',
-        note: `Added from map discovery. Rating: ${selectedRestaurant.rating}/5 (${selectedRestaurant.reviewCount} reviews)`,
-        reminder: ''
-      };
-
-      // Show confirmation
-      setShowConfirmation(true);
-      setSelectedRestaurant(null);
-      
-      // Hide confirmation after 3 seconds
-      setTimeout(() => setShowConfirmation(false), 3000);
-      
-      console.log('Added to leads:', newLead);
+  const handleAddToLeads = async () => {
+    if (selectedRestaurant && onAddToLeads) {
+      try {
+        await onAddToLeads(selectedRestaurant);
+        setAddedRestaurantName(selectedRestaurant.name);
+        setSelectedRestaurant(null);
+        setShowAlertModal(true);
+      } catch (error) {
+        console.error('Error adding lead:', error);
+        // Show error confirmation
+        setShowConfirmation(true);
+        setTimeout(() => setShowConfirmation(false), 3000);
+      }
     }
   };
 
@@ -380,10 +380,33 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
     else return 'Low';
   };
 
+  // Add radius circle to map
+  const addRadiusCircle = (location: { lat: number; lng: number }, googleMap: google.maps.Map) => {
+    // Remove existing circle
+    if (radiusCircle) {
+      radiusCircle.setMap(null);
+    }
+
+    // Create new circle
+    const circle = new google.maps.Circle({
+      strokeColor: 'rgba(8, 112, 87, 0.5)',
+      strokeOpacity: 0.8,
+      strokeWeight: 2,
+      fillColor: 'rgba(8, 112, 87, 0.1)',
+      fillOpacity: 0.35,
+      map: googleMap,
+      center: location,
+      radius: radius,
+    });
+
+    setRadiusCircle(circle);
+  };
+
   // Update radius
   useEffect(() => {
     if (map && currentLocation) {
       searchNearbyRestaurants(currentLocation, map);
+      addRadiusCircle(currentLocation, map);
     }
   }, [radius]);
 
@@ -397,6 +420,7 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
         map.setCenter(location);
         setCurrentLocation(location);
         searchNearbyRestaurants(location, map);
+        addRadiusCircle(location, map);
       });
     }
   };
@@ -481,12 +505,36 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
                 <Text style={styles.restaurantName}>{selectedRestaurant.name}</Text>
                 <Text style={styles.restaurantAddress}>{selectedRestaurant.address}</Text>
               </View>
-              <TouchableOpacity 
-                style={styles.closeButton} 
-                onPress={() => setSelectedRestaurant(null)}
-              >
-                <Text style={styles.closeButtonText}>×</Text>
-              </TouchableOpacity>
+              <View style={styles.headerActions}>
+                {/* Navigation */}
+                {totalRestaurants > 1 && (
+                  <View style={styles.navigation}>
+                    <TouchableOpacity 
+                      onPress={onPrevious}
+                      style={[styles.navButton, !onPrevious && styles.navButtonDisabled]}
+                      disabled={!onPrevious}
+                    >
+                      <Text style={styles.navButtonText}>‹</Text>
+                    </TouchableOpacity>
+                    <Text style={styles.pageInfo}>
+                      {currentRestaurantIndex + 1} of {totalRestaurants}
+                    </Text>
+                    <TouchableOpacity 
+                      onPress={onNext}
+                      style={[styles.navButton, !onNext && styles.navButtonDisabled]}
+                      disabled={!onNext}
+                    >
+                      <Text style={styles.navButtonText}>›</Text>
+                    </TouchableOpacity>
+                  </View>
+                )}
+                <TouchableOpacity 
+                  style={styles.closeButton} 
+                  onPress={() => setSelectedRestaurant(null)}
+                >
+                  <Text style={styles.closeButtonText}>×</Text>
+                </TouchableOpacity>
+              </View>
             </View>
 
             <View style={styles.restaurantDetails}>
@@ -500,7 +548,12 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
                   { backgroundColor: selectedRestaurant.isOpen ? '#10B981' : '#EF4444' }
                 ]}>
                   <Text style={styles.statusText}>
-                    {selectedRestaurant.isOpen ? 'Open' : 'Closed'}
+                    {!selectedRestaurant.isOpen 
+                      ? 'Closed Today' 
+                      : selectedRestaurant.isNewlyOpened 
+                        ? 'Newly Opened!' 
+                        : 'Open now'
+                    }
                   </Text>
                 </View>
               </View>
@@ -526,6 +579,33 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
               </View>
             </View>
 
+            {/* Sales Potential Analysis */}
+            <View style={styles.leadInfo}>
+              <View style={styles.leadInfoHeader}>
+                <Text style={styles.leadInfoTitle}>Sales Potential Analysis</Text>
+                <View style={[
+                  styles.potentialBadgeInline, 
+                  { backgroundColor: assessPotential(selectedRestaurant) === 'High' ? '#10B981' : 
+                                   assessPotential(selectedRestaurant) === 'Medium' ? '#F59E0B' : '#6B7280' }
+                ]}>
+                  <Text style={styles.potentialTextInline}>
+                    {assessPotential(selectedRestaurant).toUpperCase()}
+                  </Text>
+                </View>
+              </View>
+              <Text style={styles.leadInfoText}>
+                {assessPotential(selectedRestaurant) === 'High' && 
+                  `Excellent opportunity! ${selectedRestaurant.cuisineType} restaurants typically have high ingredient needs and value quality suppliers. Strong potential for premium product partnerships.`
+                }
+                {assessPotential(selectedRestaurant) === 'Medium' && 
+                  `Good potential for partnership. ${selectedRestaurant.cuisineType} venues often seek reliable suppliers with competitive pricing. Consider presenting our mid-range product line.`
+                }
+                {assessPotential(selectedRestaurant) === 'Low' && 
+                  `Standard opportunity. While ${selectedRestaurant.cuisineType} establishments may have specific needs, focus on value proposition and competitive pricing.`
+                }
+              </Text>
+            </View>
+
             <TouchableOpacity style={styles.addToLeadsButton} onPress={handleAddToLeads}>
               <Text style={styles.addToLeadsText}>Add to Leads</Text>
             </TouchableOpacity>
@@ -533,7 +613,42 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
         </View>
       )}
 
-      {/* Confirmation Message */}
+      {/* Rich Alert Modal */}
+      {showAlertModal && (
+        <View style={styles.alertOverlay}>
+          <View style={styles.alertModal}>
+            <View style={styles.alertHeader}>
+              <Text style={styles.alertTitle}>✅ Lead Added Successfully!</Text>
+              <Text style={styles.alertMessage}>
+                {addedRestaurantName} has been added to your leads! Menu analysis will begin shortly and you'll see real dishes from customer reviews.
+              </Text>
+            </View>
+            <View style={styles.alertActions}>
+              <TouchableOpacity 
+                style={styles.alertSecondaryButton}
+                onPress={() => {
+                  setShowAlertModal(false);
+                  // Keep the map open for adding more leads
+                }}
+              >
+                <Text style={styles.alertSecondaryText}>+ Add Another</Text>
+              </TouchableOpacity>
+              <TouchableOpacity 
+                style={styles.alertPrimaryButton}
+                onPress={() => {
+                  setShowAlertModal(false);
+                  // Navigate to lead details (would need router implementation)
+                  console.log('Navigate to lead details');
+                }}
+              >
+                <Text style={styles.alertPrimaryText}>View Details</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {/* Simple Confirmation Message */}
       {showConfirmation && (
         <View style={styles.confirmationOverlay}>
           <View style={styles.confirmationMessage}>
@@ -827,6 +942,142 @@ const styles = StyleSheet.create({
   },
   confirmationText: {
     fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#FFFFFF',
+  },
+  // Navigation styles
+  headerActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  navigation: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
+    marginRight: 12,
+  },
+  navButton: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  navButtonDisabled: {
+    opacity: 0.5,
+  },
+  navButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#6B7280',
+  },
+  pageInfo: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#6B7280',
+  },
+  // Sales potential analysis styles
+  leadInfo: {
+    backgroundColor: '#F0F9FF',
+    padding: 16,
+    borderRadius: 12,
+    marginBottom: 20,
+  },
+  leadInfoHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 8,
+  },
+  leadInfoTitle: {
+    fontSize: 14,
+    fontFamily: 'Inter-SemiBold',
+    color: '#0369A1',
+  },
+  potentialBadgeInline: {
+    paddingHorizontal: 6,
+    paddingVertical: 3,
+    borderRadius: 6,
+  },
+  potentialTextInline: {
+    fontSize: 10,
+    fontFamily: 'Inter-Bold',
+    color: '#FFFFFF',
+  },
+  leadInfoText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Regular',
+    color: '#0C4A6E',
+    lineHeight: 16,
+  },
+  // Alert modal styles
+  alertOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 5000,
+  },
+  alertModal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    margin: 20,
+    maxWidth: 400,
+    width: '100%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.15,
+    shadowRadius: 8,
+    elevation: 8,
+  },
+  alertHeader: {
+    marginBottom: 20,
+  },
+  alertTitle: {
+    fontSize: 18,
+    fontFamily: 'Inter-SemiBold',
+    color: '#111827',
+    marginBottom: 8,
+  },
+  alertMessage: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    lineHeight: 20,
+  },
+  alertActions: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  alertSecondaryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+    alignItems: 'center',
+  },
+  alertSecondaryText: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+    color: '#374151',
+  },
+  alertPrimaryButton: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 8,
+    backgroundColor: '#087057',
+    alignItems: 'center',
+  },
+  alertPrimaryText: {
+    fontSize: 14,
     fontFamily: 'Inter-Medium',
     color: '#FFFFFF',
   },
