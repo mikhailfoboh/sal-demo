@@ -4,6 +4,7 @@ import MapView, { Marker, Circle, PROVIDER_GOOGLE } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { ChevronDown, Crosshair } from 'lucide-react-native';
 import { GooglePlacesService, GooglePlaceRestaurant, isGooglePlacesConfigured } from '@/services/googlePlaces';
+import { WebMapView } from './WebMapView';
 
 interface Restaurant {
   id: string;
@@ -357,28 +358,33 @@ export const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
     return basePotential;
   };
 
-  // Web fallback component
+  // Web platform - use WebMapView
   if (Platform.OS === 'web') {
     return (
-      <View style={styles.webFallback}>
-        <Text style={styles.webFallbackTitle}>Map View</Text>
-        <Text style={styles.webFallbackText}>
-          Map functionality is only available on mobile devices.
-        </Text>
-        <Text style={styles.webFallbackSubtext}>
-          Please use the mobile app to discover nearby restaurants on the map.
-        </Text>
-      </View>
+      <WebMapView
+        onRestaurantPress={onRestaurantPress}
+        onRestaurantsLoaded={onRestaurantsLoaded}
+        radius={radius}
+        existingLeads={existingLeads}
+        onRadiusChange={onRadiusChange}
+        searchQuery={searchQuery}
+        onSearchChange={onSearchChange}
+      />
     );
   }
 
   if (!location) {
-    return <View style={styles.loadingContainer} />;
+    return (
+      <View style={styles.loadingContainer}>
+        <Text style={styles.loadingText}>Loading your location...</Text>
+      </View>
+    );
   }
 
   return (
     <View style={styles.container}>
       <MapView
+        provider={PROVIDER_GOOGLE}
         style={styles.map}
         initialRegion={{
           latitude: location.coords.latitude,
@@ -390,10 +396,12 @@ export const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
         showsMyLocationButton={false}
         showsCompass={false}
         toolbarEnabled={false}
+        mapType="standard"
+        onMapReady={() => console.log('Map is ready')}
+        onError={(error) => console.error('Map error:', error)}
         // iOS-specific styling approach
         {...Platform.select({
           ios: {
-            mapType: 'standard',
             showsPointsOfInterest: false,
             showsTraffic: false,
             showsBuildings: false,
@@ -872,5 +880,11 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
+  },
+  loadingText: {
+    fontSize: 16,
+    color: '#6B7280',
+    fontFamily: 'Inter-Regular',
+    textAlign: 'center',
   },
 }); 

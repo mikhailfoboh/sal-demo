@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "FOBOH-SAL-AGENT",
-    "slug": "foboh-sal-agent",
+    "slug": "agent-sal",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
@@ -16,8 +16,31 @@
     "assetBundlePatterns": [
       "**/*"
     ],
+    "android": {
+      "package": "com.mikfoboh.agentsal",
+      "versionCode": 3,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
+      "config": {
+        "googleMaps": {
+          "apiKey": "AIzaSyC1Xqy0Ib2LGHTQtgBdFURxclWSmZ_3pPQ"
+        }
+      }
+    },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.mikfoboh.agentsal",
+      "buildNumber": "3",
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "This app needs location access to show nearby restaurants on the map.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "This app needs location access to show nearby restaurants on the map.",
+        "ITSAppUsesNonExemptEncryption": false
+      },
+      "config": {
+        "googleMapsApiKey": "AIzaSyC1Xqy0Ib2LGHTQtgBdFURxclWSmZ_3pPQ"
+      }
     },
     "web": {
       "bundler": "metro",
@@ -27,10 +50,19 @@
     "plugins": [
       "expo-router",
       "expo-font",
-      "expo-web-browser"
+      "expo-web-browser",
+      "expo-location",
+      "expo-updates"
     ],
     "experiments": {
       "typedRoutes": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "505bb264-6991-4dc2-ae61-c8d378137acb"
+      }
+    },
+    "owner": "mikfoboh"
   }
 }
