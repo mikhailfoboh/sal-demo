@@ -177,6 +177,11 @@ FOCUS: Real menu items from Uber Eats, DoorDash, and Zomato only`;
 // Same parsing logic from PerplexityMenuService
 function parseMenuResponse(content: string, restaurantInfo: RestaurantInfo): PerplexityMenuData | null {
   try {
+    if (!content || typeof content !== 'string') {
+      console.error('❌ Invalid content provided to parseMenuResponse:', typeof content);
+      return null;
+    }
+
     const dishes: PerplexityMenuDish[] = [];
     let source = 'Web search';
     let sourceUrl = '';
@@ -357,6 +362,9 @@ function isReasonableDishName(name: string, cuisineType?: string): boolean {
 }
 
 function extractDescriptionFromContext(content: string, dishName: string): string | undefined {
+  if (!content || typeof content !== 'string') {
+    return undefined;
+  }
   const lines = content.split('\n');
   
   for (let i = 0; i < lines.length; i++) {
@@ -382,6 +390,9 @@ function extractDescriptionFromContext(content: string, dishName: string): strin
 }
 
 function extractCategoryFromContext(content: string, dishName: string): string | null {
+  if (!content || typeof content !== 'string') {
+    return null;
+  }
   // Look for section headers before the dish
   const lines = content.split('\n');
   let currentCategory = null;

@@ -19,7 +19,7 @@ interface Restaurant {
 interface RestaurantBottomSheetProps {
   restaurant: Restaurant;
   onClose: () => void;
-  onAddToLeads: () => void;
+  onAddToLeads: (restaurant: Restaurant) => void;
   onPrevious?: () => void;
   onNext?: () => void;
   currentIndex?: number;
@@ -239,7 +239,7 @@ export const RestaurantBottomSheet: React.FC<RestaurantBottomSheetProps> = ({
               <Text style={styles.secondaryButtonText}>Cancel</Text>
             </TouchableOpacity>
             
-            <TouchableOpacity style={styles.primaryButton} onPress={onAddToLeads}>
+            <TouchableOpacity style={styles.primaryButton} onPress={() => onAddToLeads(restaurant)}>
               <Text style={styles.primaryButtonText}>Add to Leads</Text>
             </TouchableOpacity>
           </View>

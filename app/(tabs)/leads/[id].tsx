@@ -526,7 +526,7 @@ export default function LeadDetailScreen() {
             />
 
             {/* Debug: Test Menu Analysis Button */}
-            {__DEV__ && (
+            {(__DEV__ || process.env.NODE_ENV === 'development') && (
               <TouchableOpacity 
                 style={[styles.createPitchButton, { backgroundColor: '#F0AD4E', marginBottom: 16 }]}
                 onPress={() => {

@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert, Platform, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, TextInput, ScrollView, Alert, Platform, StyleSheet, Modal } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
 import { useState } from 'react';
@@ -103,6 +103,8 @@ export default function LeadsScreen() {
   const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
   const [currentRestaurantIndex, setCurrentRestaurantIndex] = useState(0);
   const [nearbyRestaurants, setNearbyRestaurants] = useState<Restaurant[]>([]);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [successModalData, setSuccessModalData] = useState<{name: string, leadId?: string} | null>(null);
   const { convertRestaurantToLead, isLoading } = useRestaurantScraper();
 
   // Convert database leads to simple leads for display
@@ -140,73 +142,117 @@ export default function LeadsScreen() {
   };
 
   const handleAddToLeads = async (restaurant?: Restaurant) => {
+    console.log('🚀 handleAddToLeads called!', { restaurant: !!restaurant, selectedRestaurant: !!selectedRestaurant });
+    
     const targetRestaurant = restaurant || selectedRestaurant;
-    if (!targetRestaurant) return;
+    if (!targetRestaurant) {
+      console.error('❌ No restaurant data available');
+      return;
+    }
+
+    console.log('🔍 Adding restaurant to leads:', {
+      name: targetRestaurant.name,
+      address: targetRestaurant.address,
+      id: targetRestaurant.id,
+      hasCoordinates: !!targetRestaurant.coordinates
+    });
 
     try {
       // Create a new database lead
       const newLead: Omit<DatabaseLead, 'id' | 'created_at' | 'updated_at'> = {
-        business_name: targetRestaurant.name,
-        location: targetRestaurant.address.split(',')[1]?.trim() || targetRestaurant.cuisineType,
-        address: targetRestaurant.address,
-        category: targetRestaurant.cuisineType,
-        cuisine_type: targetRestaurant.cuisineType,
-        rating: targetRestaurant.rating,
-        review_count: targetRestaurant.reviewCount,
+        business_name: targetRestaurant.name || 'Unknown Restaurant',
+        location: targetRestaurant.address?.split(',')[1]?.trim() || targetRestaurant.cuisineType || 'Unknown Location',
+        address: targetRestaurant.address || '',
+        category: targetRestaurant.cuisineType || 'Restaurant',
+        cuisine_type: targetRestaurant.cuisineType || 'Restaurant',
+        rating: targetRestaurant.rating || 0,
+        review_count: targetRestaurant.reviewCount || 0,
         status: 'new',
         next_action: 'Visit Venue',
         product_match: '3 from menu',
         upcoming_event: 'Potential for partnership',
-        local_buzz: `Rated ${targetRestaurant.rating} stars with ${targetRestaurant.reviewCount} reviews`,
-        note: `${targetRestaurant.cuisineType} restaurant with excellent potential for our products.`,
+        local_buzz: `Rated ${targetRestaurant.rating || 0} stars with ${targetRestaurant.reviewCount || 0} reviews`,
+        note: `${targetRestaurant.cuisineType || 'Restaurant'} restaurant with excellent potential for our products.`,
         contact_name: '',
         contact_title: '',
         contact_phone: '',
         contact_email: '',
-        is_open: targetRestaurant.isOpen,
-        is_newly_opened: targetRestaurant.isNewlyOpened,
-        price_level: targetRestaurant.priceLevel,
-        latitude: targetRestaurant.coordinates.latitude,
-        longitude: targetRestaurant.coordinates.longitude,
-        sales_potential: targetRestaurant.rating >= 4.5 ? 'High' : targetRestaurant.rating >= 4.0 ? 'Medium' : 'Low',
-        google_place_id: targetRestaurant.id, // Store Google Place ID for menu analysis
+        is_open: targetRestaurant.isOpen ?? true,
+        is_newly_opened: targetRestaurant.isNewlyOpened ?? false,
+        price_level: targetRestaurant.priceLevel || 2,
+        latitude: targetRestaurant.coordinates?.latitude || 0,
+        longitude: targetRestaurant.coordinates?.longitude || 0,
+        sales_potential: (targetRestaurant.rating || 0) >= 4.5 ? 'High' : (targetRestaurant.rating || 0) >= 4.0 ? 'Medium' : 'Low',
+        google_place_id: targetRestaurant.id || '', // Store Google Place ID for menu analysis
         menu_analysis_status: 'pending', // Will trigger background analysis
       };
 
+      console.log('💾 Attempting to save lead to database...');
       const addedLead = await addLead(newLead);
+      console.log('✅ Lead saved successfully:', addedLead?.id);
       
-      // For web calls, return the lead ID
-      if (restaurant) {
-        console.log(`🍽️ Web: Added ${targetRestaurant.name} to leads with menu analysis pending`);
+      // For web calls, return the lead ID (only if actually on web platform)
+      if (restaurant && Platform.OS === 'web') {
+        console.log(`🍽️ Web: Added ${addedLead?.business_name || targetRestaurant.name || 'restaurant'} to leads with menu analysis pending`);
         return addedLead;
       }
 
       // For mobile calls, close sheet and show alert
+      console.log('📱 Mobile flow: closing sheet and showing confirmation...');
       setSelectedRestaurant(null);
       
-      Alert.alert(
-        '✅ Lead Added Successfully!',
-        `${targetRestaurant.name} has been added to your leads! Menu analysis will begin shortly and you'll see real dishes from customer reviews.`,
-        [
-          {
-            text: '+ Add Another',
-            style: 'default',
-            onPress: () => {
-              // Keep the map open for adding more leads
-              console.log('Ready to add another lead');
-            }
-          },
-          {
-            text: 'View Details',
-            style: 'default',
-            onPress: () => {
-              if (addedLead?.id) {
-                router.push(`/leads/${addedLead.id}`);
+      console.log('📱 Attempting to show success alert on mobile...');
+      
+      // For Android Expo Go, use custom modal directly as Alert.alert often fails
+      if (Platform.OS === 'android') {
+        console.log('🤖 Android detected - using custom modal for better compatibility');
+        setSuccessModalData({
+          name: addedLead?.business_name || targetRestaurant.name || 'The restaurant',
+          leadId: addedLead?.id
+        });
+        setShowSuccessModal(true);
+      } else {
+        // Try to show alert with platform-specific handling for iOS
+        try {
+          Alert.alert(
+            '✅ Lead Added Successfully!',
+            `${addedLead?.business_name || targetRestaurant.name || 'The restaurant'} has been added to your leads! Menu analysis will begin shortly and you'll see real dishes from customer reviews.`,
+            [
+              {
+                text: '+ Add Another',
+                style: 'default',
+                onPress: () => {
+                  // Keep the map open for adding more leads
+                  console.log('Ready to add another lead');
+                }
+              },
+              {
+                text: 'View Details',
+                style: 'default',
+                onPress: () => {
+                  if (addedLead?.id) {
+                    router.push(`/leads/${addedLead.id}`);
+                  }
+                }
               }
+            ],
+            { 
+              cancelable: true,
+              onDismiss: () => console.log('Alert dismissed')
             }
-          }
-        ]
-      );
+          );
+          console.log('📱 Alert.alert() called successfully');
+        } catch (alertError) {
+          console.error('❌ Alert.alert() failed:', alertError);
+          // Fallback: show custom modal
+          console.log('✅ Using custom modal fallback');
+          setSuccessModalData({
+            name: addedLead?.business_name || targetRestaurant.name || 'The restaurant',
+            leadId: addedLead?.id
+          });
+          setShowSuccessModal(true);
+        }
+      }
     } catch (error) {
       console.error('Error adding lead:', error);
       
@@ -398,6 +444,49 @@ export default function LeadsScreen() {
           totalCount={nearbyRestaurants.length}
         />
       )}
+
+      {/* Custom Success Modal - Fallback for when Alert.alert fails */}
+      <Modal
+        visible={showSuccessModal}
+        transparent={true}
+        animationType="fade"
+        onRequestClose={() => setShowSuccessModal(false)}
+      >
+        <View style={customModalStyles.overlay}>
+          <View style={customModalStyles.modal}>
+            <Text style={customModalStyles.title}>✅ Lead Added Successfully!</Text>
+            <Text style={customModalStyles.message}>
+              {successModalData?.name} has been added to your leads! Menu analysis will begin shortly and you'll see real dishes from customer reviews.
+            </Text>
+            
+            <View style={customModalStyles.buttonContainer}>
+              <TouchableOpacity 
+                style={[customModalStyles.button, customModalStyles.secondaryButton]}
+                onPress={() => {
+                  setShowSuccessModal(false);
+                  setSuccessModalData(null);
+                  console.log('Ready to add another lead');
+                }}
+              >
+                <Text style={customModalStyles.secondaryButtonText}>+ Add Another</Text>
+              </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[customModalStyles.button, customModalStyles.primaryButton]}
+                onPress={() => {
+                  setShowSuccessModal(false);
+                  setSuccessModalData(null);
+                  if (successModalData?.leadId) {
+                    router.push(`/leads/${successModalData.leadId}`);
+                  }
+                }}
+              >
+                <Text style={customModalStyles.primaryButtonText}>View Details</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -450,5 +539,74 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontFamily: 'Inter-SemiBold',
     color: '#087057',
+  },
+});
+
+const customModalStyles = StyleSheet.create({
+  overlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: 20,
+  },
+  modal: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 24,
+    width: '100%',
+    maxWidth: 400,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 5.84,
+    elevation: 10,
+  },
+  title: {
+    fontSize: 20,
+    fontFamily: 'Inter-SemiBold',
+    color: '#1F2937',
+    textAlign: 'center',
+    marginBottom: 12,
+  },
+  message: {
+    fontSize: 16,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+    textAlign: 'center',
+    lineHeight: 24,
+    marginBottom: 24,
+  },
+  buttonContainer: {
+    flexDirection: 'row',
+    gap: 12,
+  },
+  button: {
+    flex: 1,
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    alignItems: 'center',
+  },
+  primaryButton: {
+    backgroundColor: '#087057',
+  },
+  secondaryButton: {
+    backgroundColor: '#F3F4F6',
+    borderWidth: 1,
+    borderColor: '#D1D5DB',
+  },
+  primaryButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#FFFFFF',
+  },
+  secondaryButtonText: {
+    fontSize: 16,
+    fontFamily: 'Inter-SemiBold',
+    color: '#374151',
   },
 }); 

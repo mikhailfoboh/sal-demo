@@ -82,7 +82,11 @@ export class PerplexityMenuService {
       return true; // Web platform can use Perplexity via proxy
     }
     
-    return !!process.env.EXPO_PUBLIC_PERPLEXITY_API_KEY || !!process.env.PERPLEXITY_API_KEY;
+    // For mobile platforms, check API key availability
+    const hasApiKey = !!process.env.EXPO_PUBLIC_PERPLEXITY_API_KEY || !!process.env.PERPLEXITY_API_KEY;
+    console.log('📱 Mobile platform - Perplexity configured:', hasApiKey);
+    
+    return hasApiKey;
   }
 
   static getApiKey(): string {
@@ -138,7 +142,10 @@ export class PerplexityMenuService {
 
       const apiKey = this.getApiKey();
       if (!apiKey) {
-        throw new Error('Perplexity API key not configured');
+        console.error('🔑 Perplexity API key not found on mobile platform');
+        console.error('Available env vars:', Object.keys(process.env).filter(key => key.includes('PERPLEXITY')));
+        console.warn('⚠️ Falling back to Google Places analysis due to missing API key');
+        return null; // Return null to trigger fallback instead of throwing
       }
 
       console.log(`🔍 Searching for real menu data: ${restaurantInfo.name}`);
@@ -163,13 +170,19 @@ export class PerplexityMenuService {
       });
 
       if (!response.ok) {
+        console.error(`❌ Perplexity API error: ${response.status} ${response.statusText}`);
+        const errorText = await response.text();
+        console.error('Error response:', errorText);
         throw new Error(`Perplexity API error: ${response.status} ${response.statusText}`);
       }
 
       const data = await response.json();
+      console.log('📡 Perplexity API response structure:', Object.keys(data));
+      
       const content = data.choices[0]?.message?.content;
 
       if (!content) {
+        console.error('❌ No content in Perplexity response:', data);
         throw new Error('No content received from Perplexity');
       }
 
@@ -199,17 +212,40 @@ export class PerplexityMenuService {
     try {
       console.log(`🔍 Using server-side proxy for menu analysis: ${restaurantInfo.name}`);
 
-      // Check if we're in development (localhost) and use a different approach
-      const isDevelopment = typeof window !== 'undefined' && (
-        window.location.hostname === 'localhost' || 
-        window.location.hostname === '127.0.0.1' ||
-        window.location.hostname.includes('localhost')
-      );
+      // Always try the real proxy first, even in development
+      console.log('🔧 Attempting real server-side Perplexity proxy...');
+      
+      try {
+        // Production mode - use server-side proxy
+        const response = await fetch('/api/menu-analysis', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            restaurantInfo
+          }),
+        });
 
-      if (isDevelopment) {
-        console.log('🔧 Development mode detected - creating test Perplexity data for testing');
+        if (response.ok) {
+          const menuData = await response.json() as PerplexityMenuData;
+          
+          if (menuData && menuData.dishes.length > 0) {
+            console.log(`✅ Proxy returned ${menuData.dishes.length} menu items with ${menuData.confidence} confidence`);
+            console.log('📋 Sample dishes:', menuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
+            return menuData;
+          }
+        }
         
-        // For development testing, return mock Perplexity data that simulates real scraping
+        console.warn('⚠️ Proxy call failed or returned no data, falling back to mock data');
+      } catch (proxyError) {
+        console.warn('⚠️ Proxy call failed:', proxyError, 'falling back to mock data');
+      }
+
+      // Only fall back to mock data if proxy completely fails
+      console.log('🔧 Using mock data as fallback for development testing');
+      
+      // For development testing, return mock Perplexity data that simulates real scraping
         const testMenuData: PerplexityMenuData = {
           dishes: [
             {
@@ -254,39 +290,6 @@ export class PerplexityMenuService {
         console.log('💡 This simulates real Perplexity data - production will use actual scraping');
         
         return testMenuData;
-      }
-
-      // Production mode - use server-side proxy
-      const response = await fetch('/api/menu-analysis', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          restaurantInfo
-        }),
-      });
-
-      if (!response.ok) {
-        if (response.status === 404) {
-          console.warn('⚠️ No menu items found via proxy');
-          return null;
-        }
-        throw new Error(`Proxy API error: ${response.status} ${response.statusText}`);
-      }
-
-      const menuData = await response.json() as PerplexityMenuData;
-      
-      if (menuData && menuData.dishes.length > 0) {
-        console.log(`✅ Proxy returned ${menuData.dishes.length} menu items with ${menuData.confidence} confidence`);
-        console.log('📋 Sample dishes:', menuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
-        
-        // Transform the proxy response to match the expected format for menu analysis
-        return menuData;
-      } else {
-        console.warn('⚠️ No menu items received from proxy');
-        return null;
-      }
 
     } catch (error) {
       console.error('❌ Proxy menu extraction failed:', error);
@@ -364,6 +367,11 @@ FOCUS: Real menu items from Uber Eats, DoorDash, and Zomato only`;
 
   private static parseMenuResponse(content: string, restaurantInfo: RestaurantInfo): PerplexityMenuData | null {
     try {
+      if (!content || typeof content !== 'string') {
+        console.error('❌ Invalid content provided to parseMenuResponse:', typeof content);
+        return null;
+      }
+
       const dishes: PerplexityMenuDish[] = [];
       let source = 'Web search';
       let sourceUrl = '';
@@ -497,6 +505,9 @@ FOCUS: Real menu items from Uber Eats, DoorDash, and Zomato only`;
   }
 
   private static extractDescriptionFromContext(content: string, dishName: string): string | undefined {
+    if (!content || typeof content !== 'string') {
+      return undefined;
+    }
     const lines = content.split('\n');
     
     for (let i = 0; i < lines.length; i++) {
@@ -522,6 +533,9 @@ FOCUS: Real menu items from Uber Eats, DoorDash, and Zomato only`;
   }
 
   private static extractCategoryFromContext(content: string, dishName: string): string | null {
+    if (!content || typeof content !== 'string') {
+      return null;
+    }
     // Look for section headers before the dish
     const lines = content.split('\n');
     let currentCategory = null;
