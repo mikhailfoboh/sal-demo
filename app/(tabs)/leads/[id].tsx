@@ -534,8 +534,8 @@ export default function LeadDetailScreen() {
                   retriggerMenuAnalysis(lead.id);
                 }}
               >
-                <Text style={styles.createPitchButtonText}>🧪 Test Menu Analysis</Text>
-                <Text style={styles.createPitchSubtext}>Force retrigger Perplexity analysis (DEV ONLY)</Text>
+                <Text style={styles.createPitchButtonText}>🧪 Force trigger menu analysis</Text>
+                <Text style={styles.createPitchSubtext}>Force trigger menu analysis (DEV ONLY)</Text>
               </TouchableOpacity>
             )}
 
