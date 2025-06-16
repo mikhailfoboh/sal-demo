@@ -303,9 +303,17 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
             };
           });
 
-          setRestaurants(restaurantData);
-          onRestaurantsLoaded?.(restaurantData);
-          addMarkersToMap(restaurantData, googleMap);
+          // Filter out restaurants that are already added as leads
+          const filteredRestaurants = restaurantData.filter(restaurant => {
+            if (!existingLeads || existingLeads.length === 0) return true;
+            return !existingLeads.some(lead => 
+              lead.businessName.toLowerCase() === restaurant.name.toLowerCase()
+            );
+          });
+
+          setRestaurants(filteredRestaurants);
+          onRestaurantsLoaded?.(filteredRestaurants);
+          addMarkersToMap(filteredRestaurants, googleMap);
         } else {
           console.warn('Places API failed, using mock data:', status);
           loadMockRestaurants(location, googleMap);
@@ -401,9 +409,17 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
       }
     ];
 
-    setRestaurants(mockRestaurants);
-    onRestaurantsLoaded?.(mockRestaurants);
-    addMarkersToMap(mockRestaurants, googleMap);
+    // Filter out restaurants that are already added as leads
+    const filteredMockRestaurants = mockRestaurants.filter(restaurant => {
+      if (!existingLeads || existingLeads.length === 0) return true;
+      return !existingLeads.some(lead => 
+        lead.businessName.toLowerCase() === restaurant.name.toLowerCase()
+      );
+    });
+
+    setRestaurants(filteredMockRestaurants);
+    onRestaurantsLoaded?.(filteredMockRestaurants);
+    addMarkersToMap(filteredMockRestaurants, googleMap);
   };
 
   // Handle adding restaurant to leads
@@ -480,6 +496,30 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
       addRadiusCircle(currentLocation, map);
     }
   }, [radius]);
+
+  // Re-filter restaurants when existing leads change
+  useEffect(() => {
+    if (restaurants.length > 0) {
+      const filteredRestaurants = restaurants.filter(restaurant => {
+        if (!existingLeads || existingLeads.length === 0) return true;
+        return !existingLeads.some(lead => 
+          lead.businessName.toLowerCase() === restaurant.name.toLowerCase()
+        );
+      });
+      
+      // Only update if the filtered list is different
+      if (filteredRestaurants.length !== restaurants.length) {
+        setRestaurants(filteredRestaurants);
+        onRestaurantsLoaded?.(filteredRestaurants);
+        
+        // Clear existing markers and add new ones
+        if (map) {
+          // Clear existing markers (this is a simplified approach)
+          addMarkersToMap(filteredRestaurants, map);
+        }
+      }
+    }
+  }, [existingLeads]);
 
   const centerToLocation = () => {
     if (navigator.geolocation && map) {
