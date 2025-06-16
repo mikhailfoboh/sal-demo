@@ -134,10 +134,26 @@ export class PerplexityMenuService {
     try {
       // Check if running on web platform
       const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
+      const isLocalDev = typeof window !== 'undefined' && window.location?.hostname === 'localhost';
       
-      if (isWeb) {
-        console.log('🌐 Web platform detected - using server-side proxy for Perplexity');
+      if (isWeb && !isLocalDev) {
+        console.log('🌐 Web platform (production) detected - using server-side proxy for Perplexity');
         return await this.extractMenuDataViaProxy(restaurantInfo);
+      } else if (isWeb && isLocalDev) {
+        console.log('🌐 Web platform (local dev) detected - trying direct API call');
+        // In local development, try direct API since proxy isn't available
+        const apiKey = this.getApiKey();
+        if (!apiKey) {
+          console.warn('🔑 No API key available, using mock data for local development');
+          return this.getMockMenuData(restaurantInfo);
+        }
+        
+        try {
+          return await this.extractMenuDataDirectly(restaurantInfo);
+        } catch (error) {
+          console.warn('⚠️ Direct API failed in local dev (CORS restriction), using mock data');
+          return this.getMockMenuData(restaurantInfo);
+        }
       }
 
       const apiKey = this.getApiKey();
@@ -217,6 +233,7 @@ export class PerplexityMenuService {
       
       try {
         // Production mode - use server-side proxy
+        console.log('🔧 Making request to /api/menu-analysis...');
         const response = await fetch('/api/menu-analysis', {
           method: 'POST',
           headers: {
@@ -227,6 +244,8 @@ export class PerplexityMenuService {
           }),
         });
 
+        console.log(`📡 Proxy response status: ${response.status} ${response.statusText}`);
+
         if (response.ok) {
           const menuData = await response.json() as PerplexityMenuData;
           
@@ -235,66 +254,74 @@ export class PerplexityMenuService {
             console.log('📋 Sample dishes:', menuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
             return menuData;
           }
+        } else {
+          // Log the error response
+          const errorText = await response.text();
+          console.error(`❌ Proxy request failed with ${response.status}: ${errorText}`);
         }
         
         console.warn('⚠️ Proxy call failed or returned no data, falling back to mock data');
       } catch (proxyError) {
-        console.warn('⚠️ Proxy call failed:', proxyError, 'falling back to mock data');
+        console.error('❌ Proxy call exception:', proxyError);
+        console.warn('⚠️ Proxy call failed, falling back to mock data');
       }
 
       // Only fall back to mock data if proxy completely fails
       console.log('🔧 Using mock data as fallback for development testing');
-      
-      // For development testing, return mock Perplexity data that simulates real scraping
-        const testMenuData: PerplexityMenuData = {
-          dishes: [
-            {
-              name: "Margherita Pizza (Large)",
-              price: "$22.50",
-              category: "Pizza",
-              description: "Classic tomato, mozzarella, fresh basil"
-            },
-            {
-              name: "Chicken Parmigiana",
-              price: "$28.90",
-              category: "Main Course",
-              description: "Crispy chicken breast with tomato sauce and cheese"
-            },
-            {
-              name: "Caesar Salad",
-              price: "$16.50",
-              category: "Salads",
-              description: "Cos lettuce, bacon, parmesan, garlic croutons"
-            },
-            {
-              name: "Fish & Chips",
-              price: "$24.90",
-              category: "Main Course", 
-              description: "Beer battered fish with chips and tartare sauce"
-            },
-            {
-              name: "Garlic Bread (4 pieces)",
-              price: "$8.90",
-              category: "Appetizers",
-              description: "Wood-fired garlic bread with herbs"
-            }
-          ],
-          confidence: 'high',
-          source: 'Uber Eats (Development Mock)',
-          sourceUrl: 'https://ubereats.com/au/restaurant/test-restaurant',
-          lastUpdated: new Date().toISOString()
-        };
-
-        console.log(`✅ Development mode returning ${testMenuData.dishes.length} mock menu items with ${testMenuData.confidence} confidence`);
-        console.log('📋 Sample dishes:', testMenuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
-        console.log('💡 This simulates real Perplexity data - production will use actual scraping');
-        
-        return testMenuData;
+      return this.getMockMenuData(restaurantInfo);
 
     } catch (error) {
       console.error('❌ Proxy menu extraction failed:', error);
       return null;
     }
+  }
+
+  // Mock data for development testing
+  private static getMockMenuData(restaurantInfo: RestaurantInfo): PerplexityMenuData {
+    const testMenuData: PerplexityMenuData = {
+      dishes: [
+        {
+          name: "Margherita Pizza (Large)",
+          price: "$22.50",
+          category: "Pizza",
+          description: "Classic tomato, mozzarella, fresh basil"
+        },
+        {
+          name: "Chicken Parmigiana",
+          price: "$28.90",
+          category: "Main Course",
+          description: "Crispy chicken breast with tomato sauce and cheese"
+        },
+        {
+          name: "Caesar Salad",
+          price: "$16.50",
+          category: "Salads",
+          description: "Cos lettuce, bacon, parmesan, garlic croutons"
+        },
+        {
+          name: "Fish & Chips",
+          price: "$24.90",
+          category: "Main Course", 
+          description: "Beer battered fish with chips and tartare sauce"
+        },
+        {
+          name: "Garlic Bread (4 pieces)",
+          price: "$8.90",
+          category: "Appetizers",
+          description: "Wood-fired garlic bread with herbs"
+        }
+      ],
+      confidence: 'high',
+      source: 'Uber Eats (Development Mock)',
+      sourceUrl: 'https://ubereats.com/au/restaurant/test-restaurant',
+      lastUpdated: new Date().toISOString()
+    };
+
+    console.log(`✅ Development mode returning ${testMenuData.dishes.length} mock menu items with ${testMenuData.confidence} confidence`);
+    console.log('📋 Sample dishes:', testMenuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
+    console.log('💡 This simulates real Perplexity data - production will use actual scraping');
+    
+    return testMenuData;
   }
 
   private static buildSearchQuery(restaurantInfo: RestaurantInfo): string {
