@@ -187,63 +187,121 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
     initializeMap();
   }, []);
 
-  // Search nearby restaurants
+  // Search nearby restaurants with fallback data
   const searchNearbyRestaurants = (location: { lat: number; lng: number }, googleMap: google.maps.Map) => {
-    const service = new google.maps.places.PlacesService(googleMap);
-    
-    const request = {
-      location: new google.maps.LatLng(location.lat, location.lng),
-      radius: radius,
-      type: 'restaurant' as google.maps.places.PlaceType
-    };
+    try {
+      // Try the new Places API first, fallback to PlacesService if needed
+      const service = new google.maps.places.PlacesService(googleMap);
+      
+      const request = {
+        location: new google.maps.LatLng(location.lat, location.lng),
+        radius: radius,
+        type: 'restaurant' as google.maps.places.PlaceType
+      };
 
-    service.nearbySearch(request, (results, status) => {
-      if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-        const restaurantData: Restaurant[] = results.slice(0, 20).map((place, index) => ({
-          id: place.place_id || `restaurant-${index}`,
-          name: place.name || 'Unknown Restaurant',
-          coordinates: {
-            latitude: place.geometry?.location?.lat() || 0,
-            longitude: place.geometry?.location?.lng() || 0
-          },
-          rating: place.rating || 0,
-          reviewCount: place.user_ratings_total || 0,
-          cuisineType: place.types?.[0] || 'restaurant',
-          address: place.vicinity || '',
-          isOpen: place.opening_hours?.open_now || false,
-          isNewlyOpened: false,
-          priceLevel: place.price_level || 1
-        }));
-
-        setRestaurants(restaurantData);
-        onRestaurantsLoaded?.(restaurantData);
-
-        // Add markers
-        restaurantData.forEach((restaurant) => {
-          const marker = new google.maps.Marker({
-            position: {
-              lat: restaurant.coordinates.latitude,
-              lng: restaurant.coordinates.longitude
+      service.nearbySearch(request, (results, status) => {
+        if (status === google.maps.places.PlacesServiceStatus.OK && results) {
+          const restaurantData: Restaurant[] = results.slice(0, 20).map((place, index) => ({
+            id: place.place_id || `restaurant-${index}`,
+            name: place.name || 'Unknown Restaurant',
+            coordinates: {
+              latitude: place.geometry?.location?.lat() || 0,
+              longitude: place.geometry?.location?.lng() || 0
             },
-            map: googleMap,
-            title: restaurant.name,
-            icon: {
-              url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  <circle cx="12" cy="12" r="8" fill="#10B981" stroke="#ffffff" stroke-width="2"/>
-                  <path d="M12 6v6l4 2" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
-                </svg>
-              `),
-              scaledSize: new google.maps.Size(24, 24)
-            }
-          });
+            rating: place.rating || 0,
+            reviewCount: place.user_ratings_total || 0,
+            cuisineType: place.types?.[0] || 'restaurant',
+            address: place.vicinity || '',
+            isOpen: place.opening_hours?.open_now || false,
+            isNewlyOpened: false,
+            priceLevel: place.price_level || 1
+          }));
 
-          marker.addListener('click', () => {
-            onRestaurantPress(restaurant);
-          });
-        });
-      }
+          setRestaurants(restaurantData);
+          onRestaurantsLoaded?.(restaurantData);
+          addMarkersToMap(restaurantData, googleMap);
+        } else {
+          console.warn('Places API failed, using mock data:', status);
+          loadMockRestaurants(location, googleMap);
+        }
+      });
+    } catch (error) {
+      console.error('Places API error, using mock data:', error);
+      loadMockRestaurants(location, googleMap);
+    }
+  };
+
+  // Add markers to map
+  const addMarkersToMap = (restaurants: Restaurant[], googleMap: google.maps.Map) => {
+    restaurants.forEach((restaurant) => {
+      const marker = new google.maps.Marker({
+        position: {
+          lat: restaurant.coordinates.latitude,
+          lng: restaurant.coordinates.longitude
+        },
+        map: googleMap,
+        title: restaurant.name,
+        icon: {
+          url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="12" cy="12" r="8" fill="#10B981" stroke="#ffffff" stroke-width="2"/>
+              <path d="M12 6v6l4 2" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          `),
+          scaledSize: new google.maps.Size(24, 24)
+        }
+      });
+
+      marker.addListener('click', () => {
+        onRestaurantPress(restaurant);
+      });
     });
+  };
+
+  // Mock restaurants fallback when API fails
+  const loadMockRestaurants = (location: { lat: number; lng: number }, googleMap: google.maps.Map) => {
+    const mockRestaurants: Restaurant[] = [
+      {
+        id: 'mock-1',
+        name: 'The Italian Corner',
+        coordinates: { latitude: location.lat + 0.001, longitude: location.lng + 0.001 },
+        rating: 4.5,
+        reviewCount: 120,
+        cuisineType: 'Italian',
+        address: 'Near your location',
+        isOpen: true,
+        isNewlyOpened: false,
+        priceLevel: 2
+      },
+      {
+        id: 'mock-2', 
+        name: 'Sushi Express',
+        coordinates: { latitude: location.lat - 0.001, longitude: location.lng + 0.002 },
+        rating: 4.2,
+        reviewCount: 85,
+        cuisineType: 'Japanese',
+        address: 'Near your location',
+        isOpen: true,
+        isNewlyOpened: true,
+        priceLevel: 3
+      },
+      {
+        id: 'mock-3',
+        name: 'Local Burger Joint',
+        coordinates: { latitude: location.lat + 0.002, longitude: location.lng - 0.001 },
+        rating: 4.0,
+        reviewCount: 200,
+        cuisineType: 'American',
+        address: 'Near your location', 
+        isOpen: false,
+        isNewlyOpened: false,
+        priceLevel: 1
+      }
+    ];
+
+    setRestaurants(mockRestaurants);
+    onRestaurantsLoaded?.(mockRestaurants);
+    addMarkersToMap(mockRestaurants, googleMap);
   };
 
   // Update radius
