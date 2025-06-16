@@ -139,47 +139,54 @@ export default function LeadsScreen() {
     setNearbyRestaurants(filtered);
   };
 
-  const handleAddToLeads = async () => {
-    if (!selectedRestaurant) return;
+  const handleAddToLeads = async (restaurant?: Restaurant) => {
+    const targetRestaurant = restaurant || selectedRestaurant;
+    if (!targetRestaurant) return;
 
     try {
       // Create a new database lead
       const newLead: Omit<DatabaseLead, 'id' | 'created_at' | 'updated_at'> = {
-        business_name: selectedRestaurant.name,
-        location: selectedRestaurant.address.split(',')[1]?.trim() || selectedRestaurant.cuisineType,
-        address: selectedRestaurant.address,
-        category: selectedRestaurant.cuisineType,
-        cuisine_type: selectedRestaurant.cuisineType,
-        rating: selectedRestaurant.rating,
-        review_count: selectedRestaurant.reviewCount,
+        business_name: targetRestaurant.name,
+        location: targetRestaurant.address.split(',')[1]?.trim() || targetRestaurant.cuisineType,
+        address: targetRestaurant.address,
+        category: targetRestaurant.cuisineType,
+        cuisine_type: targetRestaurant.cuisineType,
+        rating: targetRestaurant.rating,
+        review_count: targetRestaurant.reviewCount,
         status: 'new',
         next_action: 'Visit Venue',
         product_match: '3 from menu',
         upcoming_event: 'Potential for partnership',
-        local_buzz: `Rated ${selectedRestaurant.rating} stars with ${selectedRestaurant.reviewCount} reviews`,
-        note: `${selectedRestaurant.cuisineType} restaurant with excellent potential for our products.`,
+        local_buzz: `Rated ${targetRestaurant.rating} stars with ${targetRestaurant.reviewCount} reviews`,
+        note: `${targetRestaurant.cuisineType} restaurant with excellent potential for our products.`,
         contact_name: '',
         contact_title: '',
         contact_phone: '',
         contact_email: '',
-        is_open: selectedRestaurant.isOpen,
-        is_newly_opened: selectedRestaurant.isNewlyOpened,
-        price_level: selectedRestaurant.priceLevel,
-        latitude: selectedRestaurant.coordinates.latitude,
-        longitude: selectedRestaurant.coordinates.longitude,
-        sales_potential: selectedRestaurant.rating >= 4.5 ? 'High' : selectedRestaurant.rating >= 4.0 ? 'Medium' : 'Low',
-        google_place_id: selectedRestaurant.id, // Store Google Place ID for menu analysis
+        is_open: targetRestaurant.isOpen,
+        is_newly_opened: targetRestaurant.isNewlyOpened,
+        price_level: targetRestaurant.priceLevel,
+        latitude: targetRestaurant.coordinates.latitude,
+        longitude: targetRestaurant.coordinates.longitude,
+        sales_potential: targetRestaurant.rating >= 4.5 ? 'High' : targetRestaurant.rating >= 4.0 ? 'Medium' : 'Low',
+        google_place_id: targetRestaurant.id, // Store Google Place ID for menu analysis
         menu_analysis_status: 'pending', // Will trigger background analysis
       };
 
       const addedLead = await addLead(newLead);
       
-      // Close the bottom sheet
+      // For web calls, return the lead ID
+      if (restaurant) {
+        console.log(`🍽️ Web: Added ${targetRestaurant.name} to leads with menu analysis pending`);
+        return addedLead;
+      }
+
+      // For mobile calls, close sheet and show alert
       setSelectedRestaurant(null);
       
       Alert.alert(
         '✅ Lead Added Successfully!',
-        `${selectedRestaurant.name} has been added to your leads! Menu analysis will begin shortly and you'll see real dishes from customer reviews.`,
+        `${targetRestaurant.name} has been added to your leads! Menu analysis will begin shortly and you'll see real dishes from customer reviews.`,
         [
           {
             text: '+ Add Another',
@@ -202,6 +209,13 @@ export default function LeadsScreen() {
       );
     } catch (error) {
       console.error('Error adding lead:', error);
+      
+      // For web calls, re-throw the error
+      if (restaurant) {
+        throw error;
+      }
+      
+      // For mobile calls, show alert
       Alert.alert(
         'Error',
         'Failed to add lead. Please try again.',
@@ -367,6 +381,7 @@ export default function LeadsScreen() {
             totalRestaurants={nearbyRestaurants.length}
             onPrevious={currentRestaurantIndex > 0 ? handlePreviousRestaurant : undefined}
             onNext={currentRestaurantIndex < nearbyRestaurants.length - 1 ? handleNextRestaurant : undefined}
+            onNavigateToLead={(leadId: string) => router.push(`/leads/${leadId}`)}
           />
         </View>
       ))}

@@ -43,11 +43,12 @@ interface RestaurantMapViewProps {
   onRadiusChange?: (radius: number) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
-  onAddToLeads?: (restaurant: Restaurant) => Promise<void>;
+  onAddToLeads?: (restaurant: Restaurant) => Promise<{ id: string } | void>;
   currentRestaurantIndex?: number;
   totalRestaurants?: number;
   onPrevious?: () => void;
   onNext?: () => void;
+  onNavigateToLead?: (leadId: string) => void;
 }
 
 interface DropdownProps {
@@ -111,7 +112,8 @@ export const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
   currentRestaurantIndex = 0,
   totalRestaurants = 0,
   onPrevious,
-  onNext
+  onNext,
+  onNavigateToLead
 }) => {
   const [location, setLocation] = useState<Location.LocationObject | null>(null);
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -384,6 +386,7 @@ export const RestaurantMapView: React.FC<RestaurantMapViewProps> = ({
         totalRestaurants={totalRestaurants}
         onPrevious={onPrevious}
         onNext={onNext}
+        onNavigateToLead={onNavigateToLead}
       />
     );
   }

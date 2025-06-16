@@ -3,6 +3,7 @@ import { View, StyleSheet, Text, TouchableOpacity, TextInput } from 'react-nativ
 import { Loader } from '@googlemaps/js-api-loader';
 import { ChevronDown, Crosshair } from 'lucide-react-native';
 import Constants from 'expo-constants';
+import { GooglePlacesService } from '@/services/googlePlaces';
 
 interface Restaurant {
   id: string;
@@ -41,11 +42,12 @@ interface WebMapViewProps {
   onRadiusChange?: (radius: number) => void;
   searchQuery?: string;
   onSearchChange?: (query: string) => void;
-  onAddToLeads?: (restaurant: Restaurant) => Promise<void>;
+  onAddToLeads?: (restaurant: Restaurant) => Promise<{ id: string } | void>;
   currentRestaurantIndex?: number;
   totalRestaurants?: number;
   onPrevious?: () => void;
   onNext?: () => void;
+  onNavigateToLead?: (leadId: string) => void;
 }
 
 interface DropdownProps {
@@ -99,7 +101,8 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   currentRestaurantIndex = 0,
   totalRestaurants = 0,
   onPrevious,
-  onNext
+  onNext,
+  onNavigateToLead
 }) => {
   const mapRef = useRef<HTMLDivElement>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
@@ -114,6 +117,7 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [showAlertModal, setShowAlertModal] = useState(false);
   const [addedRestaurantName, setAddedRestaurantName] = useState('');
+  const [addedLeadId, setAddedLeadId] = useState<string | null>(null);
   const [radiusCircle, setRadiusCircle] = useState<google.maps.Circle | null>(null);
 
   const RADIUS_OPTIONS = [
@@ -203,6 +207,67 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
     initializeMap();
   }, []);
 
+  // Helper function to determine cuisine type from Google Places types
+  const determineCuisineType = (types: string[], name: string): string => {
+    // Map Google Place types to our cuisine categories
+    const typeMap: Record<string, string> = {
+      'italian_restaurant': 'Italian',
+      'chinese_restaurant': 'Chinese',
+      'japanese_restaurant': 'Japanese',
+      'indian_restaurant': 'Indian',
+      'mexican_restaurant': 'Mexican',
+      'french_restaurant': 'French',
+      'thai_restaurant': 'Thai',
+      'greek_restaurant': 'Greek',
+      'seafood_restaurant': 'Seafood',
+      'steakhouse': 'Steakhouse',
+      'pizza_place': 'Italian',
+      'sushi_restaurant': 'Japanese',
+      'cafe': 'Cafe',
+      'bar': 'Pub Food',
+      'bakery': 'Cafe',
+      'meal_takeaway': 'Takeaway',
+      'meal_delivery': 'Takeaway',
+      'restaurant': 'Restaurant'
+    };
+
+    // Check place types first
+    for (const type of types) {
+      if (typeMap[type]) {
+        return typeMap[type];
+      }
+    }
+
+    // Check name for cuisine indicators
+    const nameIndicators: Record<string, string> = {
+      'pizza': 'Italian',
+      'sushi': 'Japanese',
+      'chinese': 'Chinese',
+      'indian': 'Indian',
+      'thai': 'Thai',
+      'mexican': 'Mexican',
+      'italian': 'Italian',
+      'french': 'French',
+      'greek': 'Greek',
+      'cafe': 'Cafe',
+      'coffee': 'Cafe',
+      'steakhouse': 'Steakhouse',
+      'seafood': 'Seafood',
+      'burger': 'American',
+      'pub': 'Pub Food',
+      'bistro': 'Modern Australian',
+    };
+
+    const lowerName = name.toLowerCase();
+    for (const [indicator, cuisine] of Object.entries(nameIndicators)) {
+      if (lowerName.includes(indicator)) {
+        return cuisine;
+      }
+    }
+
+    return 'Modern Australian'; // Default
+  };
+
   // Search nearby restaurants with fallback data
   const searchNearbyRestaurants = (location: { lat: number; lng: number }, googleMap: google.maps.Map) => {
     try {
@@ -217,21 +282,26 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
 
       service.nearbySearch(request, (results, status) => {
         if (status === google.maps.places.PlacesServiceStatus.OK && results) {
-          const restaurantData: Restaurant[] = results.slice(0, 20).map((place, index) => ({
-            id: place.place_id || `restaurant-${index}`,
-            name: place.name || 'Unknown Restaurant',
-            coordinates: {
-              latitude: place.geometry?.location?.lat() || 0,
-              longitude: place.geometry?.location?.lng() || 0
-            },
-            rating: place.rating || 0,
-            reviewCount: place.user_ratings_total || 0,
-            cuisineType: place.types?.[0] || 'restaurant',
-            address: place.vicinity || '',
-            isOpen: place.opening_hours?.open_now || false,
-            isNewlyOpened: false,
-            priceLevel: place.price_level || 1
-          }));
+          const restaurantData: Restaurant[] = results.slice(0, 20).map((place, index) => {
+            // Use proper cuisine type determination
+            const cuisineType = determineCuisineType(place.types || [], place.name || '');
+
+            return {
+              id: place.place_id || `restaurant-${index}`,
+              name: place.name || 'Unknown Restaurant',
+              coordinates: {
+                latitude: place.geometry?.location?.lat() || 0,
+                longitude: place.geometry?.location?.lng() || 0
+              },
+              rating: place.rating || 0,
+              reviewCount: place.user_ratings_total || 0,
+              cuisineType,
+              address: place.vicinity || '',
+              isOpen: place.opening_hours?.open_now || false,
+              isNewlyOpened: false,
+              priceLevel: place.price_level || 1
+            };
+          });
 
           setRestaurants(restaurantData);
           onRestaurantsLoaded?.(restaurantData);
@@ -340,8 +410,9 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   const handleAddToLeads = async () => {
     if (selectedRestaurant && onAddToLeads) {
       try {
-        await onAddToLeads(selectedRestaurant);
+        const result = await onAddToLeads(selectedRestaurant);
         setAddedRestaurantName(selectedRestaurant.name);
+        setAddedLeadId(result?.id || null);
         setSelectedRestaurant(null);
         setShowAlertModal(true);
       } catch (error) {
@@ -637,8 +708,11 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
                 style={styles.alertPrimaryButton}
                 onPress={() => {
                   setShowAlertModal(false);
-                  // Navigate to lead details (would need router implementation)
-                  console.log('Navigate to lead details');
+                  if (addedLeadId && onNavigateToLead) {
+                    onNavigateToLead(addedLeadId);
+                  } else {
+                    console.log('Navigate to lead details - Lead ID:', addedLeadId);
+                  }
                 }}
               >
                 <Text style={styles.alertPrimaryText}>View Details</Text>
