@@ -57,6 +57,7 @@
     "@babel/core": "^7.25.2",
     "@types/google.maps": "^3.58.1",
     "@types/react": "~19.0.10",
+    "@vercel/node": "^3.0.0",
     "react-native-css-transformer": "^2.0.0",
     "typescript": "~5.8.3"
   }

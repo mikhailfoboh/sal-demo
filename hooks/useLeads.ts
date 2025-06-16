@@ -156,6 +156,7 @@ export const useLeads = () => {
           let menuAnalysis;
 
           // Try Perplexity service first for real menu data
+          // Note: Web uses server-side proxy, mobile uses direct API calls
           if (PerplexityMenuService.isPerplexityConfigured()) {
             console.log('🚀 Attempting real menu analysis with Perplexity...');
             try {
@@ -265,6 +266,33 @@ export const useLeads = () => {
     }
   };
 
+  // Force retrigger menu analysis for testing (useful for debugging)
+  const retriggerMenuAnalysis = async (leadId: string) => {
+    try {
+      const lead = leads.find(l => l.id === leadId);
+      if (!lead || !lead.google_place_id) {
+        console.error('Lead not found or missing Google Place ID');
+        return;
+      }
+
+      console.log(`🔄 Manually retriggering menu analysis for ${lead.business_name}`);
+      
+      // Reset status to trigger fresh analysis
+      await updateLead(leadId, {
+        menu_analysis_status: 'pending',
+        menu_analysis_data: null,
+        menu_analysis_started_at: null,
+        menu_analysis_completed_at: null,
+      });
+
+      // Trigger the analysis
+      await triggerMenuAnalysis(leadId, lead.google_place_id);
+      
+    } catch (error) {
+      console.error('Error retriggering menu analysis:', error);
+    }
+  };
+
   const deleteLead = async (id: string) => {
     try {
       const { error: deleteError } = await supabase
@@ -295,6 +323,7 @@ export const useLeads = () => {
     addLead,
     updateLead,
     deleteLead,
+    retriggerMenuAnalysis,
   };
 };
 

@@ -71,7 +71,7 @@ export default function LeadDetailScreen() {
   const router = useRouter();
   const { colors } = useTheme();
   const { lead, isLoading } = useLeadById(id);
-  const { updateLead } = useLeads();
+  const { updateLead, retriggerMenuAnalysis } = useLeads();
   
   // Reference: PRD/POST_VISIT_PRD.md - Story 1.1: Tabbed Interface Implementation
   const [activeTab, setActiveTab] = useState('lead-info');
@@ -524,6 +524,20 @@ export default function LeadDetailScreen() {
                 email: lead.contact.email
               }}
             />
+
+            {/* Debug: Test Menu Analysis Button */}
+            {__DEV__ && (
+              <TouchableOpacity 
+                style={[styles.createPitchButton, { backgroundColor: '#F0AD4E', marginBottom: 16 }]}
+                onPress={() => {
+                  console.log('🧪 Manual menu analysis test triggered');
+                  retriggerMenuAnalysis(lead.id);
+                }}
+              >
+                <Text style={styles.createPitchButtonText}>🧪 Test Menu Analysis</Text>
+                <Text style={styles.createPitchSubtext}>Force retrigger Perplexity analysis (DEV ONLY)</Text>
+              </TouchableOpacity>
+            )}
 
             {/* Create Pitch CTA */}
             <TouchableOpacity style={styles.createPitchButton} onPress={() => {
