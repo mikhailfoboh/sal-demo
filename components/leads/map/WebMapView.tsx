@@ -100,6 +100,8 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
   const [selectedAvailability, setSelectedAvailability] = useState('Availability');
   const [isLoadingMap, setIsLoadingMap] = useState(true);
   const [mapError, setMapError] = useState<string | null>(null);
+  const [selectedRestaurant, setSelectedRestaurant] = useState<Restaurant | null>(null);
+  const [showConfirmation, setShowConfirmation] = useState(false);
 
   const RADIUS_OPTIONS = [
     { label: '1km', value: '1000' },
@@ -231,9 +233,22 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
     }
   };
 
-  // Add markers to map
+  // Determine marker color based on restaurant status
+  const getMarkerColor = (restaurant: Restaurant): string => {
+    if (!restaurant.isOpen) {
+      return '#EF4444'; // Red for closed
+    } else if (restaurant.isNewlyOpened) {
+      return '#10B981'; // Green for newly opened
+    } else {
+      return '#6B7280'; // Grey for established
+    }
+  };
+
+  // Add markers to map with color coding
   const addMarkersToMap = (restaurants: Restaurant[], googleMap: google.maps.Map) => {
     restaurants.forEach((restaurant) => {
+      const markerColor = getMarkerColor(restaurant);
+      
       const marker = new google.maps.Marker({
         position: {
           lat: restaurant.coordinates.latitude,
@@ -243,16 +258,19 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
         title: restaurant.name,
         icon: {
           url: 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(`
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <circle cx="12" cy="12" r="8" fill="#10B981" stroke="#ffffff" stroke-width="2"/>
-              <path d="M12 6v6l4 2" stroke="#ffffff" stroke-width="2" stroke-linecap="round"/>
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <circle cx="16" cy="16" r="12" fill="${markerColor}" stroke="#ffffff" stroke-width="3"/>
+              <circle cx="16" cy="16" r="6" fill="#ffffff"/>
+              ${restaurant.isNewlyOpened ? '<circle cx="16" cy="16" r="3" fill="#10B981"/>' : ''}
             </svg>
           `),
-          scaledSize: new google.maps.Size(24, 24)
+          scaledSize: new google.maps.Size(32, 32),
+          anchor: new google.maps.Point(16, 16)
         }
       });
 
       marker.addListener('click', () => {
+        setSelectedRestaurant(restaurant);
         onRestaurantPress(restaurant);
       });
     });
@@ -302,6 +320,64 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
     setRestaurants(mockRestaurants);
     onRestaurantsLoaded?.(mockRestaurants);
     addMarkersToMap(mockRestaurants, googleMap);
+  };
+
+  // Handle adding restaurant to leads
+  const handleAddToLeads = () => {
+    if (selectedRestaurant) {
+      // Convert restaurant to lead format
+      const newLead = {
+        id: `lead-${Date.now()}`,
+        businessName: selectedRestaurant.name,
+        location: selectedRestaurant.address,
+        category: selectedRestaurant.cuisineType,
+        rating: selectedRestaurant.rating,
+        reviewCount: selectedRestaurant.reviewCount,
+        status: 'new' as const,
+        nextAction: 'Contact',
+        productMatch: 'TBD',
+        upcomingEvent: '',
+        localBuzz: selectedRestaurant.isNewlyOpened ? 'Recently opened' : '',
+        note: `Added from map discovery. Rating: ${selectedRestaurant.rating}/5 (${selectedRestaurant.reviewCount} reviews)`,
+        reminder: ''
+      };
+
+      // Show confirmation
+      setShowConfirmation(true);
+      setSelectedRestaurant(null);
+      
+      // Hide confirmation after 3 seconds
+      setTimeout(() => setShowConfirmation(false), 3000);
+      
+      console.log('Added to leads:', newLead);
+    }
+  };
+
+  // Assess sales potential based on restaurant data
+  const assessPotential = (restaurant: Restaurant): string => {
+    let score = 0;
+    
+    // Rating contribution (40% weight)
+    if (restaurant.rating >= 4.5) score += 4;
+    else if (restaurant.rating >= 4.0) score += 3;
+    else if (restaurant.rating >= 3.5) score += 2;
+    else score += 1;
+    
+    // Review count contribution (30% weight)  
+    if (restaurant.reviewCount >= 200) score += 3;
+    else if (restaurant.reviewCount >= 100) score += 2;
+    else if (restaurant.reviewCount >= 50) score += 1;
+    
+    // Newly opened bonus (20% weight)
+    if (restaurant.isNewlyOpened) score += 2;
+    
+    // Open status (10% weight)
+    if (restaurant.isOpen) score += 1;
+    
+    // Convert score to potential level
+    if (score >= 8) return 'High';
+    else if (score >= 5) return 'Medium';
+    else return 'Low';
   };
 
   // Update radius
@@ -393,6 +469,76 @@ export const WebMapView: React.FC<WebMapViewProps> = ({
       {isLoadingMap && (
         <View style={styles.loadingOverlay}>
           <Text style={styles.loadingText}>Loading map...</Text>
+        </View>
+      )}
+
+      {/* Restaurant Modal */}
+      {selectedRestaurant && (
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <View style={styles.modalHeader}>
+              <View>
+                <Text style={styles.restaurantName}>{selectedRestaurant.name}</Text>
+                <Text style={styles.restaurantAddress}>{selectedRestaurant.address}</Text>
+              </View>
+              <TouchableOpacity 
+                style={styles.closeButton} 
+                onPress={() => setSelectedRestaurant(null)}
+              >
+                <Text style={styles.closeButtonText}>×</Text>
+              </TouchableOpacity>
+            </View>
+
+            <View style={styles.restaurantDetails}>
+              <View style={styles.ratingRow}>
+                <View style={styles.ratingContainer}>
+                  <Text style={styles.rating}>★ {selectedRestaurant.rating}</Text>
+                  <Text style={styles.reviewCount}>({selectedRestaurant.reviewCount} reviews)</Text>
+                </View>
+                <View style={[
+                  styles.statusBadge,
+                  { backgroundColor: selectedRestaurant.isOpen ? '#10B981' : '#EF4444' }
+                ]}>
+                  <Text style={styles.statusText}>
+                    {selectedRestaurant.isOpen ? 'Open' : 'Closed'}
+                  </Text>
+                </View>
+              </View>
+
+              <View style={styles.detailsRow}>
+                <Text style={styles.cuisineType}>{selectedRestaurant.cuisineType}</Text>
+                {selectedRestaurant.isNewlyOpened && (
+                  <View style={styles.newBadge}>
+                    <Text style={styles.newBadgeText}>NEW</Text>
+                  </View>
+                )}
+              </View>
+
+              <View style={styles.potentialRow}>
+                <Text style={styles.potentialLabel}>Sales Potential:</Text>
+                <Text style={[
+                  styles.potentialValue,
+                  { color: assessPotential(selectedRestaurant) === 'High' ? '#10B981' : 
+                           assessPotential(selectedRestaurant) === 'Medium' ? '#F59E0B' : '#6B7280' }
+                ]}>
+                  {assessPotential(selectedRestaurant)}
+                </Text>
+              </View>
+            </View>
+
+            <TouchableOpacity style={styles.addToLeadsButton} onPress={handleAddToLeads}>
+              <Text style={styles.addToLeadsText}>Add to Leads</Text>
+            </TouchableOpacity>
+          </View>
+        </View>
+      )}
+
+      {/* Confirmation Message */}
+      {showConfirmation && (
+        <View style={styles.confirmationOverlay}>
+          <View style={styles.confirmationMessage}>
+            <Text style={styles.confirmationText}>✓ Added to Leads!</Text>
+          </View>
         </View>
       )}
     </View>
@@ -531,5 +677,157 @@ const styles = StyleSheet.create({
     color: '#6B7280',
     fontFamily: 'Inter-Regular',
     textAlign: 'center',
+  },
+  modalOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'flex-end',
+    zIndex: 3000,
+  },
+  modalContent: {
+    backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 20,
+    maxHeight: '70%',
+  },
+  modalHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    marginBottom: 16,
+  },
+  restaurantName: {
+    fontSize: 20,
+    fontFamily: 'Inter-Bold',
+    color: '#111827',
+    marginBottom: 4,
+  },
+  restaurantAddress: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  closeButton: {
+    width: 32,
+    height: 32,
+    borderRadius: 16,
+    backgroundColor: '#F3F4F6',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  closeButtonText: {
+    fontSize: 20,
+    color: '#6B7280',
+    fontFamily: 'Inter-Medium',
+  },
+  restaurantDetails: {
+    marginBottom: 20,
+  },
+  ratingRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  ratingContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  rating: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#F59E0B',
+    marginRight: 8,
+  },
+  reviewCount: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  statusBadge: {
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderRadius: 12,
+  },
+  statusText: {
+    fontSize: 12,
+    fontFamily: 'Inter-Medium',
+    color: '#FFFFFF',
+  },
+  detailsRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  cuisineType: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#374151',
+  },
+  newBadge: {
+    backgroundColor: '#10B981',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 8,
+  },
+  newBadgeText: {
+    fontSize: 10,
+    fontFamily: 'Inter-Bold',
+    color: '#FFFFFF',
+  },
+  potentialRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  potentialLabel: {
+    fontSize: 14,
+    fontFamily: 'Inter-Regular',
+    color: '#6B7280',
+  },
+  potentialValue: {
+    fontSize: 14,
+    fontFamily: 'Inter-Medium',
+  },
+  addToLeadsButton: {
+    backgroundColor: '#087057',
+    borderRadius: 8,
+    paddingVertical: 14,
+    alignItems: 'center',
+  },
+  addToLeadsText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#FFFFFF',
+  },
+  confirmationOverlay: {
+    position: 'absolute',
+    top: 100,
+    left: 20,
+    right: 20,
+    zIndex: 4000,
+    alignItems: 'center',
+  },
+  confirmationMessage: {
+    backgroundColor: '#10B981',
+    borderRadius: 8,
+    paddingHorizontal: 20,
+    paddingVertical: 12,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
+    elevation: 3,
+  },
+  confirmationText: {
+    fontSize: 16,
+    fontFamily: 'Inter-Medium',
+    color: '#FFFFFF',
   },
 });
