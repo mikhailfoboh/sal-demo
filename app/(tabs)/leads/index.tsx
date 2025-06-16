@@ -260,8 +260,8 @@ export default function LeadsScreen() {
         </View>
       )}
 
-      {/* View Mode Toggle - Only show on native platforms and when not loading */}
-      {Platform.OS !== 'web' && !leadsLoading && !error && (
+      {/* View Mode Toggle - Show on all platforms when not loading */}
+      {!leadsLoading && !error && (
         <View style={[leadStyles.viewToggleContainer, { marginTop: 16, marginBottom: 16 }]}>
           <TouchableOpacity
             style={[
