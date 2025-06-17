@@ -28,24 +28,24 @@ interface PerplexityMenuData {
 
 // Server-side Perplexity API proxy to bypass CORS restrictions
 export default async function handler(req: VercelRequest, res: VercelResponse) {
-  // Set CORS headers for all responses
-  res.setHeader('Access-Control-Allow-Credentials', 'true');
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
-  res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
-
-  // Handle preflight OPTIONS request
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // Only allow POST requests for the actual API call
-  if (req.method !== 'POST') {
-    return res.status(405).json({ error: 'Method not allowed' });
-  }
-
   try {
-    const { restaurantInfo }: { restaurantInfo: RestaurantInfo } = req.body;
+    // Set CORS headers for all responses
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET,OPTIONS,PATCH,DELETE,POST,PUT');
+    res.setHeader('Access-Control-Allow-Headers', 'X-CSRF-Token, X-Requested-With, Accept, Accept-Version, Content-Length, Content-MD5, Content-Type, Date, X-Api-Version');
+
+    // Handle preflight OPTIONS request
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    // Only allow POST requests for the actual API call
+    if (req.method !== 'POST') {
+      return res.status(405).json({ error: 'Method not allowed' });
+    }
+
+    const { restaurantInfo }: { restaurantInfo: RestaurantInfo } = req.body || {};
 
     if (!restaurantInfo || !restaurantInfo.name) {
       return res.status(400).json({ error: 'Restaurant info with name is required' });
@@ -60,7 +60,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     if (!apiKey) {
       console.warn('🔑 Perplexity API key not found in server environment');
       console.warn('Available env vars:', Object.keys(process.env).filter(key => key.includes('PERPLEXITY')));
-      return res.status(500).json({ error: 'Perplexity API not configured' });
+      return res.status(500).json({ 
+        error: 'Perplexity API not configured',
+        details: 'Missing PERPLEXITY_API_KEY environment variable in Vercel',
+        availableEnvVars: Object.keys(process.env).filter(key => key.includes('PERPLEXITY'))
+      });
     }
 
     // Build the search query using the same refined prompts from PerplexityMenuService
@@ -112,6 +116,15 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return res.status(500).json({ 
       error: 'Menu analysis failed', 
       details: error instanceof Error ? error.message : 'Unknown error' 
+    });
+  }
+  } catch (serverError) {
+    console.error('❌ Server error in menu-analysis handler:', serverError);
+    // Ensure CORS headers are set even for server errors
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    return res.status(500).json({ 
+      error: 'Server error', 
+      details: serverError instanceof Error ? serverError.message : 'Unknown server error' 
     });
   }
 }
