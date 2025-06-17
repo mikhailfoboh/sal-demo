@@ -85,18 +85,11 @@ module.exports = async function handler(req, res) {
 
   } catch (error) {
     console.error('❌ Server-side menu analysis failed:', error);
-    return res.status(500).json({ 
-      error: 'Menu analysis failed', 
-      details: error instanceof Error ? error.message : 'Unknown error' 
-    });
-  }
-  } catch (serverError) {
-    console.error('❌ Server error in menu-analysis handler:', serverError);
     // Ensure CORS headers are set even for server errors
     res.setHeader('Access-Control-Allow-Origin', '*');
     return res.status(500).json({ 
-      error: 'Server error', 
-      details: serverError instanceof Error ? serverError.message : 'Unknown server error' 
+      error: 'Menu analysis failed', 
+      details: error instanceof Error ? error.message : 'Unknown error' 
     });
   }
 }
