@@ -220,8 +220,8 @@ export class PerplexityMenuService {
     try {
       console.log(`🔍 Using server-side proxy for menu analysis: ${restaurantInfo.name}`);
       
-      console.log('🔧 Making request to /api/menu-analysis...');
-      const response = await fetch('/api/menu-analysis', {
+      console.log('🔧 Making request to /api/menu-data...');
+      const response = await fetch('/api/menu-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
