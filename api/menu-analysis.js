@@ -1,5 +1,5 @@
 // Server-side Perplexity API proxy to bypass CORS restrictions
-export default async function handler(req, res) {
+module.exports = async function handler(req, res) {
   try {
     // Set CORS headers for all responses
     res.setHeader('Access-Control-Allow-Credentials', 'true');
