@@ -134,25 +134,17 @@ export class PerplexityMenuService {
     try {
       // Check if running on web platform
       const isWeb = typeof window !== 'undefined' && typeof window.document !== 'undefined';
-      const isLocalDev = typeof window !== 'undefined' && window.location?.hostname === 'localhost';
+      const isLocalDev = typeof window !== 'undefined' && 
+        (window.location?.hostname === 'localhost' || window.location?.hostname === '127.0.0.1');
       
-      if (isWeb && !isLocalDev) {
-        console.log('🌐 Web platform (production) detected - using server-side proxy for Perplexity');
-        return await this.extractMenuDataViaProxy(restaurantInfo);
-      } else if (isWeb && isLocalDev) {
-        console.log('🌐 Web platform (local dev) detected - trying direct API call');
-        // In local development, try direct API since proxy isn't available
-        const apiKey = this.getApiKey();
-        if (!apiKey) {
-          console.warn('🔑 No API key available, using mock data for local development');
+      if (isWeb) {
+        if (isLocalDev) {
+          console.log('🌐 Local web development detected - using mock data for Perplexity');
+          // In local development, Expo doesn't serve API routes, so use mock data
           return this.getMockMenuData(restaurantInfo);
-        }
-        
-        try {
-          return await this.extractMenuDataDirectly(restaurantInfo);
-        } catch (error) {
-          console.warn('⚠️ Direct API failed in local dev (CORS restriction), using mock data');
-          return this.getMockMenuData(restaurantInfo);
+        } else {
+          console.log('🌐 Production web platform detected - using server-side proxy for Perplexity');
+          return await this.extractMenuDataViaProxy(restaurantInfo);
         }
       }
 
@@ -227,99 +219,93 @@ export class PerplexityMenuService {
   static async extractMenuDataViaProxy(restaurantInfo: RestaurantInfo): Promise<PerplexityMenuData | null> {
     try {
       console.log(`🔍 Using server-side proxy for menu analysis: ${restaurantInfo.name}`);
-
-      // Always try the real proxy first, even in development
-      console.log('🔧 Attempting real server-side Perplexity proxy...');
       
-      try {
-        // Production mode - use server-side proxy
-        console.log('🔧 Making request to /api/menu-analysis...');
-        const response = await fetch('/api/menu-analysis', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            restaurantInfo
-          }),
-        });
+      console.log('🔧 Making request to /api/menu-analysis...');
+      const response = await fetch('/api/menu-analysis', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          restaurantInfo
+        }),
+      });
 
-        console.log(`📡 Proxy response status: ${response.status} ${response.statusText}`);
+      console.log(`📡 Proxy response status: ${response.status} ${response.statusText}`);
 
-        if (response.ok) {
-          const menuData = await response.json() as PerplexityMenuData;
-          
-          if (menuData && menuData.dishes.length > 0) {
-            console.log(`✅ Proxy returned ${menuData.dishes.length} menu items with ${menuData.confidence} confidence`);
-            console.log('📋 Sample dishes:', menuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
-            return menuData;
-          }
-        } else {
-          // Log the error response
-          const errorText = await response.text();
-          console.error(`❌ Proxy request failed with ${response.status}: ${errorText}`);
-        }
+      if (response.ok) {
+        const menuData = await response.json() as PerplexityMenuData;
         
-        console.warn('⚠️ Proxy call failed or returned no data, falling back to mock data');
-      } catch (proxyError) {
-        console.error('❌ Proxy call exception:', proxyError);
-        console.warn('⚠️ Proxy call failed, falling back to mock data');
+        if (menuData && menuData.dishes.length > 0) {
+          console.log(`✅ Proxy returned ${menuData.dishes.length} menu items with ${menuData.confidence} confidence`);
+          console.log('📋 Sample dishes:', menuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
+          return menuData;
+        }
+      } else {
+        // Log the error response
+        const errorText = await response.text();
+        console.error(`❌ Proxy request failed with ${response.status}: ${errorText}`);
+        throw new Error(`Proxy request failed: ${response.status} ${errorText}`);
       }
-
-      // Only fall back to mock data if proxy completely fails
-      console.log('🔧 Using mock data as fallback for development testing');
-      return this.getMockMenuData(restaurantInfo);
+      
+      console.warn('⚠️ Proxy returned no data');
+      return null;
 
     } catch (error) {
       console.error('❌ Proxy menu extraction failed:', error);
+      // Return null to trigger fallback to Google Places analysis
       return null;
     }
   }
 
   // Mock data for development testing
-  private static getMockMenuData(restaurantInfo: RestaurantInfo): PerplexityMenuData {
+  static getMockMenuData(restaurantInfo: RestaurantInfo): PerplexityMenuData {
+    // Generate cuisine-appropriate mock dishes based on restaurant type
+    const cuisineType = restaurantInfo.cuisineType?.toLowerCase() || 'restaurant';
+    let mockDishes = [];
+
+    if (cuisineType.includes('pizza') || cuisineType.includes('italian')) {
+      mockDishes = [
+        { name: "Margherita Pizza (Large)", price: "$22.50", category: "Pizza", description: "Classic tomato, mozzarella, fresh basil" },
+        { name: "Chicken Parmigiana", price: "$28.90", category: "Main Course", description: "Crispy chicken breast with tomato sauce and cheese" },
+        { name: "Garlic Bread (4 pieces)", price: "$8.90", category: "Appetizers", description: "Wood-fired garlic bread with herbs" },
+        { name: "Fettuccine Carbonara", price: "$24.50", category: "Pasta", description: "Creamy bacon and egg pasta" }
+      ];
+    } else if (cuisineType.includes('asian') || cuisineType.includes('chinese') || cuisineType.includes('thai')) {
+      mockDishes = [
+        { name: "Pad Thai", price: "$18.90", category: "Noodles", description: "Stir-fried rice noodles with tofu and peanuts" },
+        { name: "Sweet & Sour Pork", price: "$22.50", category: "Main Course", description: "Battered pork with sweet and sour sauce" },
+        { name: "Spring Rolls (4 pieces)", price: "$12.50", category: "Appetizers", description: "Crispy vegetable spring rolls" },
+        { name: "Fried Rice", price: "$16.90", category: "Rice", description: "Wok-fried rice with egg and vegetables" }
+      ];
+    } else if (cuisineType.includes('indian')) {
+      mockDishes = [
+        { name: "Butter Chicken", price: "$24.90", category: "Curry", description: "Creamy tomato-based chicken curry" },
+        { name: "Garlic Naan", price: "$6.50", category: "Bread", description: "Fresh baked garlic naan bread" },
+        { name: "Lamb Biryani", price: "$26.50", category: "Rice", description: "Fragrant basmati rice with spiced lamb" },
+        { name: "Samosas (3 pieces)", price: "$9.90", category: "Appetizers", description: "Crispy pastry with spiced potato filling" }
+      ];
+    } else {
+      // Default generic restaurant dishes
+      mockDishes = [
+        { name: "Grilled Salmon", price: "$28.50", category: "Main Course", description: "Atlantic salmon with seasonal vegetables" },
+        { name: "Caesar Salad", price: "$16.50", category: "Salads", description: "Cos lettuce, bacon, parmesan, garlic croutons" },
+        { name: "Fish & Chips", price: "$24.90", category: "Main Course", description: "Beer battered fish with chips and tartare sauce" },
+        { name: "Soup of the Day", price: "$12.50", category: "Appetizers", description: "Chef's daily soup selection" }
+      ];
+    }
+
     const testMenuData: PerplexityMenuData = {
-      dishes: [
-        {
-          name: "Margherita Pizza (Large)",
-          price: "$22.50",
-          category: "Pizza",
-          description: "Classic tomato, mozzarella, fresh basil"
-        },
-        {
-          name: "Chicken Parmigiana",
-          price: "$28.90",
-          category: "Main Course",
-          description: "Crispy chicken breast with tomato sauce and cheese"
-        },
-        {
-          name: "Caesar Salad",
-          price: "$16.50",
-          category: "Salads",
-          description: "Cos lettuce, bacon, parmesan, garlic croutons"
-        },
-        {
-          name: "Fish & Chips",
-          price: "$24.90",
-          category: "Main Course", 
-          description: "Beer battered fish with chips and tartare sauce"
-        },
-        {
-          name: "Garlic Bread (4 pieces)",
-          price: "$8.90",
-          category: "Appetizers",
-          description: "Wood-fired garlic bread with herbs"
-        }
-      ],
+      dishes: mockDishes,
       confidence: 'high',
-      source: 'Uber Eats (Development Mock)',
-      sourceUrl: 'https://ubereats.com/au/restaurant/test-restaurant',
+      source: 'Local Development Mock',
+      sourceUrl: 'https://ubereats.com/au/restaurant/local-development',
       lastUpdated: new Date().toISOString()
     };
 
-    console.log(`✅ Development mode returning ${testMenuData.dishes.length} mock menu items with ${testMenuData.confidence} confidence`);
+    console.log(`✅ Local development returning ${testMenuData.dishes.length} mock menu items for ${cuisineType} cuisine`);
     console.log('📋 Sample dishes:', testMenuData.dishes.slice(0, 3).map(d => `${d.name}: ${d.price}`));
-    console.log('💡 This simulates real Perplexity data - production will use actual scraping');
+    console.log('💡 This simulates real Perplexity data - production will use actual API scraping');
     
     return testMenuData;
   }
