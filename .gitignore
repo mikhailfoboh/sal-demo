@@ -46,3 +46,4 @@ expo-env.d.ts
 
 # Claude Code related files
 CLAUDE.md
+.vercel
