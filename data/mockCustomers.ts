@@ -10,7 +10,7 @@ export const mockCustomers: Customer[] = [
     territory: 'SF Downtown',
     healthStatus: 'at-risk',
     churnRisk: 'No orders in the last 3 weeks, unusually long gap',
-    lastOrder: '3 weeks ago',
+    lastOrder: '$8K - 3 weeks ago',
     contact: {
       name: 'Jane Smith',
       title: 'Beverage Director',
@@ -103,7 +103,7 @@ export const mockCustomers: Customer[] = [
     address: '456 Market St, San Francisco, CA',
     territory: 'SF Downtown',
     healthStatus: 'healthy',
-    lastOrder: '1 week ago',
+    lastOrder: '$15K - 1 week ago',
     contact: {
       name: 'Wei Zhang',
       title: 'Owner',
@@ -191,7 +191,7 @@ export const mockCustomers: Customer[] = [
     address: '789 Valencia St, San Francisco, CA',
     territory: 'SF Mission',
     healthStatus: 'inactive',
-    lastOrder: '2 months ago',
+    lastOrder: '$3K - 2 months ago',
     contact: {
       name: 'Alex Rivera',
       title: 'Bar Manager',
@@ -277,7 +277,7 @@ export const mockCustomers: Customer[] = [
     address: '321 Fillmore St, San Francisco, CA',
     territory: 'SF Pacific Heights',
     healthStatus: 'healthy',
-    lastOrder: '5 days ago',
+    lastOrder: '$22K - 5 days ago',
     contact: {
       name: 'Sophia Martínez',
       title: 'Owner & Sommelier',
@@ -366,7 +366,7 @@ export const mockCustomers: Customer[] = [
     territory: 'SF Haight',
     healthStatus: 'at-risk',
     churnRisk: 'Order volume down 40% from regular pattern',
-    lastOrder: '2 weeks ago',
+    lastOrder: '$6K - 2 weeks ago',
     contact: {
       name: 'Patrick O\'Leary',
       title: 'General Manager',
